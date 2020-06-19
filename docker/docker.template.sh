@@ -311,13 +311,13 @@ _remove () {
 _load () {
   # _load ${dry_run} ${docker_file}
   if [[ ${verbose} -eq 1 ]]; then
-    write_magenta "_start(${1}, ${2})"
+    write_magenta "_load(${1}, ${2})"
   fi
   # load image
   if [[ ${1} -eq 1 ]]; then
-    write_yellow "Dry-Run>> gzip -cd | docker load"
+    write_yellow "Dry-Run>> gzip -cd ${docker_file} | docker load"
   else
-    write_green "Executing>> gzip -cd | docker load"
+    write_green "Executing>> gzip -cd ${docker_file} | docker load"
     gzip -cd ${docker_file} | docker load
   fi
 }
