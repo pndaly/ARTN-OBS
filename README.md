@@ -38,8 +38,8 @@ any (valid) telescope and instrument combination within the network.
 * Install dependencies:
 
     ```bash
-    % pip3 install --upgrade pip
-    % pip3 install -r requirements.txt
+      % pip3 install --upgrade pip
+      % pip3 install -r requirements.txt
     ```
 
 ## Create (Get) The Dockerized Database 
@@ -53,17 +53,17 @@ We dockerize the database, so a utility is also provided for that:
 This script is based upon `${OBS_DOCKER}/docker.template.sh` which contains dummy credentials. 
 Edit as you see fit but (as a minimum) you should change:
 
-```bash
-my_image="artn/postgres-12:q3c2"
-my_password="db_secret"
-my_username="artn"
-my_volume=${HOME}
-```
+    ```bash
+      my_image="artn/postgres-12:q3c2"
+      my_password="db_secret"
+      my_username="artn"
+      my_volume=${HOME}
+    ```
 
 If you decide to use Docker, remember to restart the container after a reboot via root's `crontab` (and, of 
 course, replace `<path_to_shell_script>` with your installation path in the following):
     
-    ```
+    ```bash
       @reboot bash <path_to_shell_script>/docker.sh --command=start --name=artn
     ```
 
@@ -76,17 +76,19 @@ a tarball of our dockerized container upon request.
 
 You should now *copy* `${OBS_ETC}/OBS.template.sh` and edit the copy to suit your site.
 
-```bash
-% cp ${OBS_ETC}/OBS.template.sh ${OBS_ETC}/OBS.sh
-% vi ${OBS_ETC}/OBS.sh
-```
+    ```bash
+      % cp ${OBS_ETC}/OBS.template.sh ${OBS_ETC}/OBS.sh
+      % vi ${OBS_ETC}/OBS.sh
+    ```
+
+NB: the last line of this file performs an IERS update every time it is invoked.
 
 ## Test(s)
 
-```bash
-  % cd ${OBS_TESTS}
-  % python3.7 -m pytest artn_test.py
-```
+    ```bash
+      % cd ${OBS_TESTS}
+      % python3.7 -m pytest artn_test.py
+    ```
 
 ## IERS Updates
 

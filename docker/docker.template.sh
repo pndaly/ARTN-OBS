@@ -315,10 +315,10 @@ _load () {
   fi
   # load image
   if [[ ${1} -eq 1 ]]; then
-    write_yellow "Dry-Run>> docker load < ${docker_file}"
+    write_yellow "Dry-Run>> gzip -cd | docker load"
   else
-    write_green "Executing>> docker load < ${docker_file}"
-    docker load < ${docker_file}
+    write_green "Executing>> gzip -cd | docker load"
+    gzip -cd ${docker_file} | docker load
   fi
 }
 
