@@ -39,6 +39,8 @@ def obsreq_cli(iargs=None):
         request_args['id__lte'] = f'{iargs.id__lte}'
     if iargs.username:
         request_args['username'] = f'{iargs.username}'
+    if iargs.exclude_username:
+        request_args['exclude_username'] = f'{iargs.exclude_username}'
     if iargs.pi:
         request_args['pi'] = f'{iargs.pi}'
     if iargs.created_iso__gte:
@@ -161,6 +163,12 @@ def obsreq_cli(iargs=None):
         request_args['user_id__gte'] = f'{iargs.user_id__gte}'
     if iargs.user_id__lte:
         request_args['user_id__lte'] = f'{iargs.user_id__lte}'
+    if iargs.astro:
+        request_args['astro'] = f'{iargs.astro}'
+    if iargs.cone:
+        request_args['cone'] = f'{iargs.cone}'
+    if iargs.ellipse:
+        request_args['ellipse'] = f'{iargs.ellipse}'
 
     # connect to database
     db = connect_database()()
@@ -198,6 +206,7 @@ if __name__ == '__main__':
     _p.add_argument(f'--id__gte', help=f'id >= <int>')
     _p.add_argument(f'--id__lte', help=f'id <= <int>')
     _p.add_argument(f'--username', help=f'username <str>')
+    _p.add_argument(f'--exclude-username', help=f'exclude username <str>')
     _p.add_argument(f'--pi', help=f'pi <str>')
     _p.add_argument(f'--created_iso__gte', help=f'created_iso >= <YYYY-MM-DD>')
     _p.add_argument(f'--created_iso__lte', help=f'created_iso <= <YYYY-MM-DD>')
@@ -259,6 +268,9 @@ if __name__ == '__main__':
     _p.add_argument(f'--user_id', help=f'user_id = <int>')
     _p.add_argument(f'--user_id__gte', help=f'user_id >= <int>')
     _p.add_argument(f'--user_id__lte', help=f'user_id <= <int>')
+    _p.add_argument(f'--astro', help=f'Astronomical cone search <name,radius>')
+    _p.add_argument(f'--cone', help=f'Cone search <ra,dec,radius>')
+    _p.add_argument(f'--ellipse', help=f'Ellipse search <ra,dec,major_axis,axis_ratio,position_angle>')
     _p.add_argument(f'--verbose', default=False, action='store_true', help=f'if present, produce more verbose output')
 
     # execute

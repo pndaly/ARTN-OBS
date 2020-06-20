@@ -38,10 +38,9 @@ class Sidereal(object):
     # +
     # class variable(s) - TO BE REMOVED!
     # -
-    preferred_binning = 'None'  # only do 1 binning
-    preferred_filter = 'V'      # only do 1 filter
-    preferred_dec_angle = 35.0  # within an hour pf zenith
-    preferred_ra_angle = 35.0   # within an hour of zenith
+    binning = 'None'   # preferred binning
+    cone_angle = 35.0  # preferred cone search
+    filter = 'V'       # preferred filter
 
     # +
     # method: __init__()
@@ -87,7 +86,9 @@ class Sidereal(object):
         self.__target_readout = None
         self.__time_per_observation = None
         self.__zenith_dec = None
+        self.__zenith_dec_deg = None
         self.__zenith_ra = None
+        self.__zenith_ra_deg = None
 
     # +
     # decorator(s)
@@ -204,7 +205,9 @@ class Sidereal(object):
             self.__log.debug(f'self.__telescope={self.__telescope}')
             self.__log.debug(f'self.__time_per_observation ={self.__time_per_observation}')
             self.__log.debug(f'self.__zenith_dec={self.__zenith_dec}')
+            self.__log.debug(f'self.__zenith_dec_deg={self.__zenith_dec_deg}')
             self.__log.debug(f'self.__zenith_ra={self.__zenith_ra}')
+            self.__log.debug(f'self.__zenith_ra_deg={self.__zenith_ra_deg}')
 
     # +
     # method: calculate()
@@ -229,10 +232,7 @@ class Sidereal(object):
 
         # calculate some value(s)
         self.__zenith_ra, self.__zenith_dec = self.__telescope.zenith(self.__begin)
-        self.__dec_min = dec_to_decimal(self.__zenith_dec) - Sidereal.preferred_dec_angle
-        self.__dec_max = dec_to_decimal(self.__zenith_dec) + Sidereal.preferred_dec_angle
-        self.__ra_min = ra_to_decimal(self.__zenith_ra) - Sidereal.preferred_ra_angle
-        self.__ra_max = ra_to_decimal(self.__zenith_ra) + Sidereal.preferred_ra_angle
+        self.__zenith_ra_deg, self.__zenith_dec_deg = ra_to_decimal(self.__zenith_ra), dec_to_decimal(self.__zenith_dec)
         self.__sidereal_utc_jd = self.__begin_jd + abs(OBS_UTC_OFFSET/24.0)
         self.__sidereal_utc = jd_to_isot(self.__sidereal_utc_jd)
         self.__mjd_start = self.__begin_jd - OBS_MJD_OFFSET
@@ -240,11 +240,9 @@ class Sidereal(object):
 
         if self.__log:
             self.__log.debug(f"self.__zenith_ra={self.__zenith_ra}")
+            self.__log.debug(f"self.__zenith_ra_deg={self.__zenith_ra_deg}")
             self.__log.debug(f"self.__zenith_dec={self.__zenith_dec}")
-            self.__log.debug(f"self.__dec_min={self.__dec_min}")
-            self.__log.debug(f"self.__dec_max={self.__dec_max}")
-            self.__log.debug(f"self.__ra_min={self.__ra_min}")
-            self.__log.debug(f"self.__ra_max={self.__ra_max}")
+            self.__log.debug(f"self.__zenith_dec_deg={self.__zenith_dec_deg}")
             self.__log.debug(f"self.__sidereal_utc={self.__sidereal_utc}")
             self.__log.debug(f"self.__sidereal_utc_jd={self.__sidereal_utc_jd}")
             self.__log.debug(f"self.__mjd_start={self.__mjd_start}")
@@ -255,17 +253,18 @@ class Sidereal(object):
         self.__request_args = {
             'airmass__gte': self.__telescope.min_airmass,
             'airmass__lte': self.__telescope.max_airmass,
-            'binning': Sidereal.preferred_binning,
+            'binning': Sidereal.binning,
             'begin_mjd__lte': self.__mjd_end,
             'dec_deg__gte': self.__dec_min,
             'dec_deg__lte': self.__dec_max,
             'end_mjd__gte': self.__mjd_start,
-            'filter_name': Sidereal.preferred_filter,
+            'filter_name': Sidereal.filter,
             'instrument': self.__instrument.name,
             'ra_deg__gte': self.__ra_min,
             'ra_deg__lte': self.__ra_max,
             'non_sidereal': True,
-            'telescope': self.__telescope.name
+            'telescope': self.__telescope.name,
+            'exclude_username': 'rts2'
         }
         if self.__log:
             self.__log.debug(f"self.request_args={self.__request_args}")
@@ -286,8 +285,8 @@ class Sidereal(object):
             if self.__telescope.is_observable(self.__begin, f"{_e['ra_hms']} {_e['dec_dms']}"):
                 if self.__log:
                     self.__log.debug(f"{_e['object_name']} is up and within "
-                                     f"RA={Sidereal.preferred_ra_angle}{UNI__DEGREE}, "
-                                     f"Dec={Sidereal.preferred_dec_angle}{UNI__DEGREE} of zenith")
+                                     f"RA={Sidereal.cone_angle}{UNI__DEGREE}, "
+                                     f"Dec={Sidereal.cone_angle}{UNI__DEGREE} of zenith")
                 if _e['binning'] not in self.__targets:
                     self.__targets[f"{_e['binning']}"] = [_e]
                 else:
@@ -316,14 +315,14 @@ class Sidereal(object):
         #     self.__target_readout = self.__instrument.readout_times[_t]
         #     self.__time_per_observation = (self.__target_exp_time + self.__target_readout) * self.__target_num_exp
         #     if self.__log:
-        #         self.__log.debug(f'filter: {Sidereal.preferred_filter}, '
+        #         self.__log.debug(f'filter: {Sidereal.filter}, '
         #                          f'exp_time={self.__target_exp_time}s, '
         #                          f'num_exp={self.__target_num_exp}, '
         #                          f'binning: {_t}, '
         #                          f'readout time={self.__instrument.readout_times[_t]}s, '
         #                          f'time_per_observation={self.__time_per_observation}s')
         #     pdh(f"{jd_to_isot(self.__start_sidereal_jd)[:-7]} observe {self.__target_num_exp} sidereal "
-        #         f"[{self.__target_name} filter: {Sidereal.preferred_filter}, binning: {_t}]")
+        #         f"[{self.__target_name} filter: {Sidereal.filter}, binning: {_t}]")
         #     self.__start_sidereal_jd += self.__time_per_observation / OBS_SECONDS_PER_DAY
         # self.__delta = (self.__end_sidereal_jd - self.__start_sidereal_jd) * OBS_SECONDS_PER_DAY
 

@@ -38,10 +38,11 @@ class Foci(object):
     # +
     # class variable(s)
     # -
-    preferred_binning = 'None'  # only do 1 binning
-    preferred_filter = 'V'      # only do 1 filter
-    preferred_dec_angle = 35.0  # within an hour pf zenith
-    preferred_ra_angle = 35.0   # within an hour of zenith
+    binning = 'None'   # preferred binning
+    cone_angle = 35.0  # preferred cone angle
+    filter = 'V'       # preferred filter
+    # dec_angle = 35.0  # within an hour pf zenith
+    # ra_angle = 35.0   # within an hour of zenith
 
     # +
     # method: __init__()
@@ -87,7 +88,9 @@ class Foci(object):
         self.__target_readout = None
         self.__time_per_observation = None
         self.__zenith_dec = None
+        self.__zenith_dec_deg = None
         self.__zenith_ra = None
+        self.__zenith_ra_deg = None
 
     # +
     # decorator(s)
@@ -131,7 +134,8 @@ class Foci(object):
             raise Exception(f'invalid input, instrument={instrument}')
         # unsupported combination, report error
         if self.__instrument.name not in INS__SUPPORTED[self.__telescope.name]:
-            raise Exception(f'invalid combination, instrument={self.__instrument.name}, telescope={self.__telescope.name}')
+            raise Exception(f'invalid combination, instrument={self.__instrument.name}, '
+                            f'telescope={self.__telescope.name}')
 
     @property
     def log(self):
@@ -204,7 +208,9 @@ class Foci(object):
             self.__log.debug(f'self.__telescope={self.__telescope}')
             self.__log.debug(f'self.__time_per_observation ={self.__time_per_observation}')
             self.__log.debug(f'self.__zenith_dec={self.__zenith_dec}')
+            self.__log.debug(f'self.__zenith_dec_deg={self.__zenith_dec_deg}')
             self.__log.debug(f'self.__zenith_ra={self.__zenith_ra}')
+            self.__log.debug(f'self.__zenith_ra_deg={self.__zenith_ra_deg}')
 
     # +
     # method: calculate()
@@ -229,10 +235,11 @@ class Foci(object):
 
         # calculate some value(s)
         self.__zenith_ra, self.__zenith_dec = self.__telescope.zenith(self.__begin)
-        self.__dec_min = dec_to_decimal(self.__zenith_dec) - Foci.preferred_dec_angle
-        self.__dec_max = dec_to_decimal(self.__zenith_dec) + Foci.preferred_dec_angle
-        self.__ra_min = ra_to_decimal(self.__zenith_ra) - Foci.preferred_ra_angle
-        self.__ra_max = ra_to_decimal(self.__zenith_ra) + Foci.preferred_ra_angle
+        self.__zenith_ra_deg, self.__zenith_dec_deg = ra_to_decimal(self.__zenith_ra), dec_to_decimal(self.__zenith_dec)
+        # self.__dec_min = dec_to_decimal(self.__zenith_dec) - Foci.dec_angle
+        # self.__dec_max = dec_to_decimal(self.__zenith_dec) + Foci.dec_angle
+        # self.__ra_min = ra_to_decimal(self.__zenith_ra) - Foci.ra_angle
+        # self.__ra_max = ra_to_decimal(self.__zenith_ra) + Foci.ra_angle
         self.__foci_utc_jd = self.__begin_jd + abs(OBS_UTC_OFFSET/24.0)
         self.__foci_utc = jd_to_isot(self.__foci_utc_jd)
         self.__mjd_start = self.__begin_jd - OBS_MJD_OFFSET
@@ -241,31 +248,34 @@ class Foci(object):
         if self.__log:
             self.__log.debug(f"self.__zenith_ra={self.__zenith_ra}")
             self.__log.debug(f"self.__zenith_dec={self.__zenith_dec}")
-            self.__log.debug(f"self.__dec_min={self.__dec_min}")
-            self.__log.debug(f"self.__dec_max={self.__dec_max}")
-            self.__log.debug(f"self.__ra_min={self.__ra_min}")
-            self.__log.debug(f"self.__ra_max={self.__ra_max}")
+            self.__log.debug(f"self.__zenith_ra_deg={self.__zenith_ra_deg}")
+            self.__log.debug(f"self.__zenith_dec_deg={self.__zenith_dec_deg}")
+            # self.__log.debug(f"self.__dec_min={self.__dec_min}")
+            # self.__log.debug(f"self.__dec_max={self.__dec_max}")
+            # self.__log.debug(f"self.__ra_min={self.__ra_min}")
+            # self.__log.debug(f"self.__ra_max={self.__ra_max}")
             self.__log.debug(f"self.__foci_utc={self.__foci_utc}")
             self.__log.debug(f"self.__foci_utc_jd={self.__foci_utc_jd}")
             self.__log.debug(f"self.__mjd_start={self.__mjd_start}")
             self.__log.debug(f"self.__mjd_end={self.__mjd_end}")
 
-        # filter query for foci and make SQL do much of the work ... here's where the Q3C cone search wins!
+        # filter query for foci and make SQL do much of the work
         self.__query = None
         self.__request_args = {
             'airmass__gte': self.__telescope.min_airmass,
             'airmass__lte': self.__telescope.max_airmass,
-            'binning': Foci.preferred_binning,
+            'binning': Foci.binning,
             'begin_mjd__lte': self.__mjd_end,
-            'dec_deg__gte': self.__dec_min,
-            'dec_deg__lte': self.__dec_max,
+            # 'dec_deg__gte': self.__dec_min,
+            # 'dec_deg__lte': self.__dec_max,
             'end_mjd__gte': self.__mjd_start,
-            'filter_name': Foci.preferred_filter,
+            'filter_name': Foci.filter,
             'instrument': self.__instrument.name,
-            'ra_deg__gte': self.__ra_min,
-            'ra_deg__lte': self.__ra_max,
+            # 'ra_deg__gte': self.__ra_min,
+            # 'ra_deg__lte': self.__ra_max,
             'telescope': self.__telescope.name,
-            'username': 'rts2'
+            'username': 'rts2',
+            'cone': f'{self.__zenith_ra_deg},{self.__zenith_dec_deg},{Foci.cone_angle}'
         }
         if self.__log:
             self.__log.debug(f"self.request_args={self.__request_args}")
@@ -286,8 +296,8 @@ class Foci(object):
             if self.__telescope.is_observable(self.__begin, f"{_e['ra_hms']} {_e['dec_dms']}"):
                 if self.__log:
                     self.__log.debug(f"{_e['object_name']} is up and within "
-                                     f"RA={Foci.preferred_ra_angle}{UNI__DEGREE}, "
-                                     f"Dec={Foci.preferred_dec_angle}{UNI__DEGREE} of zenith")
+                                     f"RA={Foci.cone_angle}{UNI__DEGREE}, "
+                                     f"Dec={Foci.cone_angle}{UNI__DEGREE} of zenith")
                 if _e['binning'] not in self.__targets:
                     self.__targets[f"{_e['binning']}"] = [_e]
                 else:
@@ -315,14 +325,14 @@ class Foci(object):
             self.__target_readout = self.__instrument.readout_times[_t]
             self.__time_per_observation = (self.__target_exp_time + self.__target_readout) * self.__target_num_exp
             if self.__log:
-                self.__log.debug(f'filter: {Foci.preferred_filter}, '
+                self.__log.debug(f'filter: {Foci.filter}, '
                                  f'exp_time={self.__target_exp_time}s, '
                                  f'num_exp={self.__target_num_exp}, '
                                  f'binning: {_t}, '
                                  f'readout time={self.__instrument.readout_times[_t]}s, '
                                  f'time_per_observation={self.__time_per_observation}s')
             pdh(f"{jd_to_isot(self.__start_foci_jd)[:-7]} observe {self.__target_num_exp} foci "
-                f"[{self.__target_name} filter: {Foci.preferred_filter}, binning: {_t}]")
+                f"[{self.__target_name} filter: {Foci.filter}, binning: {_t}]")
             self.__start_foci_jd += self.__time_per_observation / OBS_SECONDS_PER_DAY
         self.__delta = (self.__end_foci_jd - self.__start_foci_jd) * OBS_SECONDS_PER_DAY
 

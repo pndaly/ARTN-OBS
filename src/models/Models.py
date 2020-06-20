@@ -5,6 +5,8 @@
 # import(s)
 # -
 from src import *
+from sqlalchemy import not_
+from sqlalchemy import func
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -26,7 +28,7 @@ import sqlalchemy
 # constant(s)
 # -
 OBS_DB_URL = f'postgresql+psycopg2://{OBS_DB_USER}:{OBS_DB_PASS}@{OBS_DB_HOST}:{OBS_DB_PORT}/{OBS_DB_NAME}'
-OBS_ISOT_LEN = len(get_isot())
+# OBS_ISOT_LEN = len(get_isot())
 
 
 # +
@@ -289,6 +291,7 @@ class User(Base):
 # +
 # function: obsreq_filters()
 # -
+# noinspection PyBroadException
 def obsreq_filters(query=None, request_args=None):
 
     # check input(s)
@@ -313,6 +316,10 @@ def obsreq_filters(query=None, request_args=None):
     # obsreq records with username like value (API: ?username=demo)
     if request_args.get('username'):
         query = query.filter(ObsReq.username.ilike(f"%{request_args['username']}%"))
+
+    # obsreq records with username not like value (API: ?exclude_username=demo)
+    if request_args.get('exclude_username'):
+        query = query.filter(not_(ObsReq.username.ilike(f"%{request_args['exclude_username']}%")))
 
     # obsreq records with pi like value (API: ?pi=demo)
     if request_args.get('pi'):
@@ -567,6 +574,32 @@ def obsreq_filters(query=None, request_args=None):
     # obsreq records with user_id >= value (API: ?user_id__gte=20)
     if request_args.get('user_id__gte'):
         query = query.filter(ObsReq.user_id >= int(request_args['user_id__gte']))
+
+    # return records with astronomical cone search (API: ?astro=M51,25.0)
+    if request_args.get('astro'):
+        try:
+            _nam, _rad = request_args['astro'].split(',')
+            _ra, _dec = get_astropy_coords(_nam.strip().upper())
+            query = query.filter(func.q3c_radial_query(ObsReq.ra_deg, ObsReq.dec_deg, _ra, _dec, float(_rad)))
+        except Exception:
+            pass
+
+    # return records with cone search (API: ?cone=23.5,29.2,5.0)
+    if request_args.get('cone'):
+        try:
+            _ra, _dec, _rad = map(float, request_args['cone'].split(','))
+            query = query.filter(func.q3c_radial_query(ObsReq.ra_deg, ObsReq.dec_deg, _ra, _dec, _rad))
+        except Exception:
+            pass
+
+    # return records with elliptical cone search (API: ?ellipse=202.1,47.2,5.0,0.5,25.0)
+    if request_args.get('ellipse'):
+        try:
+            _ra, _dec, _maj, _rat, _pos = map(float, request_args['ellipse'].split(','))
+            query = query.filter(
+                func.q3c_ellipse_query(ObsReq.ra_deg, ObsReq.dec_deg, _ra, _dec, _maj, _rat, _pos))
+        except Exception:
+            pass
 
     # sort results
     if request_args.get('sort_field') and request_args.get('sort_order'):
