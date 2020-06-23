@@ -28,7 +28,6 @@ import sqlalchemy
 # constant(s)
 # -
 OBS_DB_URL = f'postgresql+psycopg2://{OBS_DB_USER}:{OBS_DB_PASS}@{OBS_DB_HOST}:{OBS_DB_PORT}/{OBS_DB_NAME}'
-# OBS_ISOT_LEN = len(get_isot())
 
 
 # +
@@ -41,7 +40,7 @@ def connect_database(url=OBS_DB_URL):
         engine = create_engine(url)
         session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     except:
-        session = None
+        raise Exception(f'invalid input, url={url}')
     return session
 
 
@@ -52,10 +51,9 @@ def connect_database(url=OBS_DB_URL):
 def disconnect_database(session=None):
     """ disconnects from database """
     try:
-        if session is not None:
-            session.close()
+        session.close()
     except:
-        pass
+        raise Exception(f'invalid input, session={session}')
     return None
 
 
