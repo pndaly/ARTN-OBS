@@ -53,7 +53,10 @@ class Instrument(object):
 
     @name.setter
     def name(self, name=''):
-        self.__name = name if (isinstance(name, str) and name in INS__INSTRUMENTS) else INS__INSTRUMENTS[0]
+        if isinstance(name, str) and name in INS__INSTRUMENTS:
+            self.__name = name
+        else:
+            raise Exception(f'invalid input, name={name}')
 
     @property
     def log(self):
