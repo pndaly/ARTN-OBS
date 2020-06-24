@@ -336,12 +336,22 @@ class Telescope(object):
 
         # get coordinates by name or Ra, Dec
         if isinstance(obs_name, str) and obs_name.strip() != '':
-            _obs_coords = FixedTarget.from_name(obs_name)
+            try:
+                _obs_coords = FixedTarget.from_name(obs_name)
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert name')
+                return None
         elif isinstance(obs_coords, str) and obs_coords.strip() != '':
-            _ra, _dec = obs_name.split()
-            _ra = f'{_ra} hours' if 'hours' not in _ra.lower() else _ra
-            _dec = f'{_dec} degrees' if 'degrees' not in _dec.lower() else _dec
-            _obs_coords = SkyCoord(f"{_ra}", f"{_dec}")
+            try:
+                _ra, _dec = obs_name.split()
+                _ra = f'{_ra} hours' if 'hours' not in _ra.lower() else _ra
+                _dec = f'{_dec} degrees' if 'degrees' not in _dec.lower() else _dec
+                _obs_coords = SkyCoord(f"{_ra}", f"{_dec}")
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert coords')
+                return None
         else:
             return None
 
@@ -353,7 +363,7 @@ class Telescope(object):
                 return self.__observer.target_is_up(Time(obs_time), target=_obs_coords)
         except:
             if self.__log:
-                self.__log.error(f'unable to convert name')
+                self.__log.error(f'unable to convert time')
         return None
 
     # +
@@ -460,7 +470,7 @@ class Telescope(object):
         """ returns moon phase for civilians """
 
         # check input(s)
-        if re.match(OBS_ISO_PATTERN, obs_time) is None:
+        if not isinstance(obs_time, str) or (isinstance(obs_time, str) and re.match(OBS_ISO_PATTERN, obs_time) is None):
             return None
 
         # return value or none
@@ -576,7 +586,7 @@ class Telescope(object):
     def moon_distance(self, obs_time=Time(get_isot(0, True))):
         """ returns moon distance """
 
-        # return value or none
+        # return value or math.nan
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 return self.observer.moon_altaz(obs_time).distance.value
@@ -593,7 +603,7 @@ class Telescope(object):
     def moon_illumination(self, obs_time=Time(get_isot(0, True))):
         """ returns moon illumination fraction """
 
-        # return value or none
+        # return value or math.nan
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 return self.observer.moon_illumination(obs_time)
@@ -711,8 +721,8 @@ class Telescope(object):
         """ returns moon phase for steward observatory """
 
         # check input(s)
-        if re.match(OBS_ISO_PATTERN, obs_time) is None:
-            return None
+        if not isinstance(obs_time, str) or (isinstance(obs_time, str) and re.match(OBS_ISO_PATTERN, obs_time) is None):
+            return None, None
 
         # return value or none
         try:
@@ -727,7 +737,7 @@ class Telescope(object):
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
-        return None
+        return None, None
 
     # +
     # method: observing_end()
@@ -781,12 +791,22 @@ class Telescope(object):
 
         # get coordinates by name or Ra, Dec
         if isinstance(obs_name, str) and obs_name.strip() != '':
-            _obs_coords = FixedTarget.from_name(obs_name)
+            try:
+                _obs_coords = FixedTarget.from_name(obs_name)
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert name')
+                return None
         elif isinstance(obs_coords, str) and obs_coords.strip() != '':
-            _ra, _dec = obs_coords.split()
-            _ra = f'{_ra} hours' if 'hours' not in _ra.lower() else _ra
-            _dec = f'{_dec} degrees' if 'degrees' not in _dec.lower() else _dec
-            _obs_coords = SkyCoord(f"{_ra}", f"{_dec}")
+            try:
+                _ra, _dec = obs_coords.split()
+                _ra = f'{_ra} hours' if 'hours' not in _ra.lower() else _ra
+                _dec = f'{_dec} degrees' if 'degrees' not in _dec.lower() else _dec
+                _obs_coords = SkyCoord(f"{_ra}", f"{_dec}")
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert coords')
+                return None
         else:
             return None
 
@@ -798,7 +818,7 @@ class Telescope(object):
                 return self.__observer.altaz(Time(obs_time), target=_obs_coords)
         except:
             if self.__log:
-                self.__log.error(f'unable to convert name')
+                self.__log.error(f'unable to convert time')
         return None
 
     # +
@@ -920,17 +940,20 @@ class Telescope(object):
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
-        return None
+        return None, None
 
     # +
     # function: zenith()
     # -
     def zenith(self, obs_time=Time(get_isot(0, True))):
         """ returns RA, Dec of zenith """
+
+        # check input(s)
+        if not isinstance(obs_time, str) or (isinstance(obs_time, str) and re.match(OBS_ISO_PATTERN, obs_time) is None):
+            return None, None
+
         try:
-            _ra = self.lst(obs_time=obs_time)
-            _dec = dec_from_decimal(TEL__LATITUDE[self.name])
-            return _ra, _dec
+            return self.lst(obs_time=obs_time), dec_from_decimal(TEL__LATITUDE[self.__name])
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
