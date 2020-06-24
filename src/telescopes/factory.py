@@ -116,7 +116,10 @@ class Telescope(object):
 
     @name.setter
     def name(self, name=''):
-        self.__name = name if (isinstance(name, str) and name in TEL__TELESCOPES) else TEL__TELESCOPES[0]
+        if isinstance(name, str) and name in TEL__TELESCOPES:
+            self.__name = name
+        else:
+            raise Exception(f'invalid input, name={name}')
 
     @property
     def log(self):
