@@ -420,7 +420,8 @@ def dec_from_decimal(dec=math.nan):
     try:
         # noinspection PyUnresolvedReferences
         _c = SkyCoord(ra=math.nan*u.degree, dec=dec*u.degree).dec.signed_dms
-        _sign, _d, _m, _s = '+' if _c.sign == 1.0 else '-', int(_c.d), int(_c.m), _c.s
+        _d, _m, _s = int(_c.d), int(_c.m), _c.s
+        _sign = '+' if _c.sign == 1.0 else '-'
         return f'{_sign}{_d:02d}:{_m:02d}:{_s:06.3f}'
     except:
         return None
@@ -434,7 +435,8 @@ def dec_to_dms(dec=math.nan):
     """ return Dec from decimal to d:m:s """
     try:
         _c = Angle(dec, unit=u.degree).signed_dms
-        _sign, _d, _m, _s = '+' if _c.sign == 1.0 else '-', int(_c.d), int(_c.m), _c.s
+        _d, _m, _s = int(_c.d), int(_c.m), _c.s
+        _sign = '+' if _c.sign == 1.0 else '-'
         return f'{_sign}{_d:02d}:{_m:02d}:{_s:06.3f}'
     except:
         return None

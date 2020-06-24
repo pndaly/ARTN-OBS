@@ -72,7 +72,7 @@ def test_obsreq_filters_3():
 
 
 def test_obsreq_filters_4():
-    """ test obsreq_filters() for correct input(s) """
+    """ test obsreq_filters() returns dictionary of value(s) """
     _q = connect_database()().query(ObsReq)
     _q = obsreq_filters(query=_q, request_args={'id__gte': 0})
     assert isinstance(ObsReq.serialize_list(_q.all())[0], dict) in OBS_TRUE_VALUES
@@ -103,7 +103,7 @@ def test_user_filters_3():
 
 
 def test_user_filters_4():
-    """ test user_filters() for correct input(s) """
+    """ test user_filters() returns dictionary of value(s) """
     _q = connect_database()().query(User)
     _q = user_filters(query=_q, request_args={'id__gte': 0})
     assert isinstance(User.serialize_list(_q.all())[0], dict) in OBS_TRUE_VALUES

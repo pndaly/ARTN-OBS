@@ -41,6 +41,6 @@ def test_instrument_3():
 
 # noinspection PyUnresolvedReferences
 def test_instrument_4():
-    """ test Instrument() for correct input(s) """
+    """ test Instrument() returns correct attribute(s) """
     assert all(isinstance(_k, (float, int, str, list, dict, tuple)) for _k in
                [_a for _a in dir(Instrument(random.choice(INS__INSTRUMENTS))) if '__' not in _a]) in OBS_TRUE_VALUES
