@@ -254,11 +254,11 @@ class Telescope(object):
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _date = Time(obs_time)
             if twilight == 'astronomical':
-                _jd = self.observer.sun_rise_time(_date, which=which, horizon=_a_horizon).jd
+                _jd = self.__observer.sun_rise_time(_date, which=which, horizon=_a_horizon).jd
             elif twilight == 'civil':
-                _jd = self.observer.sun_rise_time(_date, which=which, horizon=_c_horizon).jd
+                _jd = self.__observer.sun_rise_time(_date, which=which, horizon=_c_horizon).jd
             elif twilight == 'nautical':
-                _jd = self.observer.sun_rise_time(_date, which=which, horizon=_n_horizon).jd
+                _jd = self.__observer.sun_rise_time(_date, which=which, horizon=_n_horizon).jd
             return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
         except:
             if self.__log:
@@ -287,11 +287,11 @@ class Telescope(object):
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _date = Time(obs_time)
             if twilight == 'astronomical':
-                _jd = self.observer.sun_set_time(_date, which=which, horizon=_a_horizon).jd
+                _jd = self.__observer.sun_set_time(_date, which=which, horizon=_a_horizon).jd
             elif twilight == 'civil':
-                _jd = self.observer.sun_set_time(_date, which=which, horizon=_c_horizon).jd
+                _jd = self.__observer.sun_set_time(_date, which=which, horizon=_c_horizon).jd
             elif twilight == 'nautical':
-                _jd = self.observer.sun_set_time(_date, which=which, horizon=_n_horizon).jd
+                _jd = self.__observer.sun_set_time(_date, which=which, horizon=_n_horizon).jd
             return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
         except:
             if self.__log:
@@ -344,7 +344,7 @@ class Telescope(object):
                 return None
         elif isinstance(obs_coords, str) and obs_coords.strip() != '':
             try:
-                _ra, _dec = obs_name.split()
+                _ra, _dec = obs_coords.split()
                 _ra = f'{_ra} hours' if 'hours' not in _ra.lower() else _ra
                 _dec = f'{_dec} degrees' if 'degrees' not in _dec.lower() else _dec
                 _obs_coords = SkyCoord(f"{_ra}", f"{_dec}")
@@ -373,10 +373,10 @@ class Telescope(object):
         """ returns local sidereal time """
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                _lst_h, _lst_m, _lst_s = self.observer.local_sidereal_time(obs_time).hms
+                _lst_h, _lst_m, _lst_s = self.__observer.local_sidereal_time(obs_time).hms
                 return f'{int(_lst_h):02d}:{int(_lst_m):02d}:{float(_lst_s):06.3f}'
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                _lst_h, _lst_m, _lst_s = self.observer.local_sidereal_time(Time(obs_time)).hms
+                _lst_h, _lst_m, _lst_s = self.__observer.local_sidereal_time(Time(obs_time)).hms
                 return f'{int(_lst_h):02d}:{int(_lst_m):02d}:{float(_lst_s):06.3f}'
         except:
             if self.__log:
@@ -396,10 +396,10 @@ class Telescope(object):
         # return isot string or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                _jd = self.observer.noon(obs_time, which=which).jd
+                _jd = self.__observer.noon(obs_time, which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                _jd = self.observer.noon(Time(obs_time), which=which).jd
+                _jd = self.__observer.noon(Time(obs_time), which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
         except:
             if self.__log:
@@ -419,10 +419,10 @@ class Telescope(object):
         # return isot string or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                _jd = self.observer.midnight(obs_time, which=which).jd
+                _jd = self.__observer.midnight(obs_time, which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                _jd = self.observer.midnight(Time(obs_time), which=which).jd
+                _jd = self.__observer.midnight(Time(obs_time), which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
         except:
             if self.__log:
@@ -438,9 +438,9 @@ class Telescope(object):
         # return value or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.moon_altaz(obs_time).alt.value
+                return self.__observer.moon_altaz(obs_time).alt.value
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.moon_altaz(Time(obs_time)).alt.value
+                return self.__observer.moon_altaz(Time(obs_time)).alt.value
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -455,9 +455,9 @@ class Telescope(object):
         # return value or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.moon_altaz(obs_time).az.value
+                return self.__observer.moon_altaz(obs_time).az.value
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.moon_altaz(Time(obs_time)).az.value
+                return self.__observer.moon_altaz(Time(obs_time)).az.value
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -515,9 +515,9 @@ class Telescope(object):
         # return value or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.moon_altaz(obs_time)
+                return self.__observer.moon_altaz(obs_time)
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.moon_altaz(Time(obs_time))
+                return self.__observer.moon_altaz(Time(obs_time))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -589,9 +589,9 @@ class Telescope(object):
         # return value or math.nan
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.moon_altaz(obs_time).distance.value
+                return self.__observer.moon_altaz(obs_time).distance.value
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.moon_altaz(Time(obs_time)).distance.value
+                return self.__observer.moon_altaz(Time(obs_time)).distance.value
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -606,9 +606,9 @@ class Telescope(object):
         # return value or math.nan
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.moon_illumination(obs_time)
+                return self.__observer.moon_illumination(obs_time)
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.moon_illumination(Time(obs_time))
+                return self.__observer.moon_illumination(Time(obs_time))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -624,9 +624,9 @@ class Telescope(object):
         moon_alt = math.nan
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                moon_alt = self.observer.moon_alt(obs_time)
+                moon_alt = self.__observer.moon_alt(obs_time)
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                moon_alt = self.observer.moon_alt(Time(obs_time))
+                moon_alt = self.__observer.moon_alt(Time(obs_time))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -660,9 +660,9 @@ class Telescope(object):
         # return value or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.moon_phase(obs_time).value
+                return self.__observer.moon_phase(obs_time).value
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.moon_phase(Time(obs_time)).value
+                return self.__observer.moon_phase(Time(obs_time)).value
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -681,10 +681,10 @@ class Telescope(object):
         # return isot string or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                _jd = self.observer.moon_rise_time(obs_time, which=which).jd
+                _jd = self.__observer.moon_rise_time(obs_time, which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                _jd = self.observer.moon_rise_time(Time(obs_time), which=which).jd
+                _jd = self.__observer.moon_rise_time(Time(obs_time), which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
         except:
             if self.__log:
@@ -704,10 +704,10 @@ class Telescope(object):
         # return isot string or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                _jd = self.observer.moon_set_time(obs_time, which=which).jd
+                _jd = self.__observer.moon_set_time(obs_time, which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                _jd = self.observer.moon_set_time(Time(obs_time), which=which).jd
+                _jd = self.__observer.moon_set_time(Time(obs_time), which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
         except:
             if self.__log:
@@ -784,6 +784,44 @@ class Telescope(object):
         return None
 
     # +
+    # method: parallactic_angle()
+    # -
+    def parallactic_angle(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
+        """ returns parallactic angle """
+
+        # get coordinates by name or Ra, Dec
+        if isinstance(obs_name, str) and obs_name.strip() != '':
+            try:
+                _obs_coords = FixedTarget.from_name(obs_name)
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert name')
+                return math.nan
+        elif isinstance(obs_coords, str) and obs_coords.strip() != '':
+            try:
+                _ra, _dec = obs_coords.split()
+                _ra = f'{_ra} hours' if 'hours' not in _ra.lower() else _ra
+                _dec = f'{_dec} degrees' if 'degrees' not in _dec.lower() else _dec
+                _obs_coords = SkyCoord(f"{_ra}", f"{_dec}")
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert coords')
+                return math.nan
+        else:
+            return math.nan
+
+        # return angle
+        try:
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                return self.__observer.parallactic_angle(obs_time, target=_obs_coords)
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                return self.__observer.parallactic_angle(Time(obs_time), target=_obs_coords)
+        except:
+            if self.__log:
+                self.__log.error(f'unable to convert time')
+        return math.nan
+
+    # +
     # method: radec_to_altaz()
     # -
     def radec_to_altaz(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
@@ -830,9 +868,9 @@ class Telescope(object):
         # return value or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.sun_altaz(obs_time).alt.value
+                return self.__observer.sun_altaz(obs_time).alt.value
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.sun_altaz(Time(obs_time)).alt.value
+                return self.__observer.sun_altaz(Time(obs_time)).alt.value
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -847,9 +885,9 @@ class Telescope(object):
         # return value or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.sun_altaz(obs_time).az.value
+                return self.__observer.sun_altaz(obs_time).az.value
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.sun_altaz(Time(obs_time)).az.value
+                return self.__observer.sun_altaz(Time(obs_time)).az.value
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -864,9 +902,9 @@ class Telescope(object):
         # return value or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                return self.observer.sun_altaz(obs_time)
+                return self.__observer.sun_altaz(obs_time)
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                return self.observer.sun_altaz(Time(obs_time))
+                return self.__observer.sun_altaz(Time(obs_time))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -885,10 +923,10 @@ class Telescope(object):
         # return isot string or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                _jd = self.observer.sun_rise_time(obs_time, which=which).jd
+                _jd = self.__observer.sun_rise_time(obs_time, which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                _jd = self.observer.sun_rise_time(Time(obs_time), which=which).jd
+                _jd = self.__observer.sun_rise_time(Time(obs_time), which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
         except:
             if self.__log:
@@ -908,10 +946,10 @@ class Telescope(object):
         # return isot string or none
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
-                _jd = self.observer.sun_set_time(obs_time, which=which).jd
+                _jd = self.__observer.sun_set_time(obs_time, which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
-                _jd = self.observer.sun_set_time(Time(obs_time), which=which).jd
+                _jd = self.__observer.sun_set_time(Time(obs_time), which=which).jd
                 return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
         except:
             if self.__log:
@@ -1175,7 +1213,7 @@ class Telescope(object):
     def observe(self, **kwargs):
         if not self.__simulation:
             if self.__log:
-                self.__log.debug(f'called self.observer(), kwargs={kwargs}')
+                self.__log.debug(f'called self.__observer(), kwargs={kwargs}')
 
     # +
     # method: observable()

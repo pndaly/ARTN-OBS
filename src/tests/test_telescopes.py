@@ -186,8 +186,8 @@ def test_telescope_24():
 
 def test_telescope_25():
     """ test Telescope.is_observable() for correct input(s) """
-    _val = _tel.is_observable(get_isot(random.randint(-1000, 1000), False), obs_coords='13:30:00 47:11:00')
-    assert _val in [OBS_TRUE_VALUES, OBS_FALSE_VALUES, None]
+    _val = _tel.is_observable(get_isot(random.randint(-1000, 1000), True), obs_coords='13:30:00 47:11:00')
+    assert _val in OBS_TRUE_VALUES or _val in OBS_FALSE_VALUES
 
 
 def test_telescope_26():
@@ -854,3 +854,33 @@ def test_telescope_133():
 def test_telescope_134():
     """ test Telescope().zenith() for correct input(s) """
     assert re.match(OBS_DEC_PATTERN, _tel.zenith(get_isot(random.randint(-1000, 1000), False))[1]) is not None
+
+
+# +
+# test: Telescope().parallactic_angle()
+# -
+def test_telescope_135():
+    """ test Telescope.parallactic_angle() for incorrect input(s) """
+    assert all(_tel.parallactic_angle(obs_time=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+def test_telescope_136():
+    """ test Telescope.parallactic_angle() for incorrect input(s) """
+    assert all(_tel.parallactic_angle(obs_name=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+def test_telescope_137():
+    """ test Telescope.parallactic_angle() for incorrect input(s) """
+    assert all(_tel.parallactic_angle(obs_coords=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+def test_telescope_138():
+    """ test Telescope.parallactic_angle() for correct input(s) """
+    _val = _tel.parallactic_angle(get_isot(random.randint(-1000, 1000), True), obs_name='M51').degree
+    assert isinstance(_val, float) in OBS_TRUE_VALUES and _val is not math.nan
+
+
+def test_telescope_139():
+    """ test Telescope.parallactic_angle() for correct input(s) """
+    _val = _tel.parallactic_angle(get_isot(random.randint(-1000, 1000), True), obs_coords='13:30:00 47:11:00').degree
+    assert (-360.0 <= _val <= 360.0) in OBS_TRUE_VALUES
