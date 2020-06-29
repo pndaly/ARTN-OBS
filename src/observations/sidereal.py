@@ -39,7 +39,7 @@ class Sidereal(object):
     # class variable(s) - TO BE REMOVED!
     # -
     binning = 'None'   # preferred binning
-    cone_angle = 35.0  # preferred cone search
+    cone_angle = 45.0  # preferred cone search
     filter = 'V'       # preferred filter
 
     # +
@@ -254,15 +254,16 @@ class Sidereal(object):
             'airmass__gte': self.__telescope.min_airmass,
             'airmass__lte': self.__telescope.max_airmass,
             'binning': Sidereal.binning,
+            'cone': f'{self.__zenith_ra_deg},{self.__zenith_dec_deg},{Sidereal.cone_angle}',
             'begin_mjd__lte': self.__mjd_end,
-            'dec_deg__gte': self.__dec_min,
-            'dec_deg__lte': self.__dec_max,
+            #'dec_deg__gte': self.__dec_min,
+            #'dec_deg__lte': self.__dec_max,
             'end_mjd__gte': self.__mjd_start,
             'filter_name': Sidereal.filter,
             'instrument': self.__instrument.name,
-            'ra_deg__gte': self.__ra_min,
-            'ra_deg__lte': self.__ra_max,
-            'non_sidereal': True,
+            #'ra_deg__gte': self.__ra_min,
+            #'ra_deg__lte': self.__ra_max,
+            'non_sidereal': 'false',
             'telescope': self.__telescope.name,
             'exclude_username': 'rts2'
         }
@@ -272,6 +273,7 @@ class Sidereal(object):
         try:
             self.__query = self.__db.query(ObsReq)
             self.__query = obsreq_filters(query=self.__query, request_args=self.__request_args)
+            self.__query = obsreq_filters(query=self.__query, request_args={'exclude_username': 'artn'})
             self.__query = self.__query.order_by(ObsReq.id.desc())
         except:
             if self.__log:
