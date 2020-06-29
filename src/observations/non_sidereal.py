@@ -33,13 +33,13 @@ __doc__ = """
 # -
 # noinspection PyBroadException,PyUnresolvedReferences
 class NonSidereal(object):
-    """ generate focus observation(s) """
+    """ generate non-sidereal observation(s) """
 
     # +
     # class variable(s) - TO BE REMOVED!
     # -
     binning = 'None'   # preferred binning
-    cone_angle = 35.0  # preferred cone search
+    cone_angle = 90.0  # preferred cone search
     filter = 'V'       # preferred filter
 
     # +
@@ -213,7 +213,7 @@ class NonSidereal(object):
     # method: calculate()
     # -
     def calculate(self, begin=get_isot(0, True), end=jd_to_isot(isot_to_jd(get_isot(0, True))+OBS_ONE_HOUR)):
-        """ calculate focus observing schedule """
+        """ calculate non-sidereal observing schedule """
 
         # connect to database
         self.__db = connect_database()()
@@ -258,15 +258,16 @@ class NonSidereal(object):
             'airmass__gte': self.__telescope.min_airmass,
             'airmass__lte': self.__telescope.max_airmass,
             'binning': NonSidereal.binning,
-            'begin_mjd__lte': self.__mjd_end,
-            'dec_deg__gte': self.__dec_min,
-            'dec_deg__lte': self.__dec_max,
-            'end_mjd__gte': self.__mjd_start,
+            'cone': f'{self.__zenith_ra_deg},{self.__zenith_dec_deg},{NonSidereal.cone_angle}',
+            #'begin_mjd__lte': self.__mjd_end,
+            #'dec_deg__gte': self.__dec_min,
+            #'dec_deg__lte': self.__dec_max,
+            #'end_mjd__gte': self.__mjd_start,
             'filter_name': NonSidereal.filter,
             'instrument': self.__instrument.name,
-            'ra_deg__gte': self.__ra_min,
-            'ra_deg__lte': self.__ra_max,
-            'non_sidereal': False,
+            #'ra_deg__gte': self.__ra_min,
+            #'ra_deg__lte': self.__ra_max,
+            'non_sidereal': 'true',
             'telescope': self.__telescope.name,
             'exclude_username': 'rts2'
         }
@@ -276,10 +277,11 @@ class NonSidereal(object):
         try:
             self.__query = self.__db.query(ObsReq)
             self.__query = obsreq_filters(query=self.__query, request_args=self.__request_args)
+            self.__query = obsreq_filters(query=self.__query, request_args={'exclude_username': 'artn'})
             self.__query = self.__query.order_by(ObsReq.id.desc())
-        except:
+        except Exception as _e:
             if self.__log:
-                self.__log.error(f'failed to execute query={self.__query}')
+                self.__log.error(f'failed to execute query={self.__query}, error={_e}')
             return self.__end, self.__end_jd
 
         # save result(s)

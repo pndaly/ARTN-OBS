@@ -33,7 +33,7 @@ __doc__ = """
 # -
 # noinspection PyBroadException,PyUnresolvedReferences
 class Sidereal(object):
-    """ generate focus observation(s) """
+    """ generate sidereal observation(s) """
 
     # +
     # class variable(s) - TO BE REMOVED!
@@ -213,7 +213,7 @@ class Sidereal(object):
     # method: calculate()
     # -
     def calculate(self, begin=get_isot(0, True), end=jd_to_isot(isot_to_jd(get_isot(0, True))+OBS_ONE_HOUR)):
-        """ calculate focus observing schedule """
+        """ calculate sidereal observing schedule """
 
         # connect to database
         self.__db = connect_database()()
