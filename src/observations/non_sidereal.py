@@ -5,8 +5,7 @@
 #  import(s)
 # -
 from src.models.Models import *
-from src.instruments.factory import *
-from src.telescopes.factory import *
+from src.observations.obsparams import *
 
 
 # +
@@ -14,7 +13,7 @@ from src.telescopes.factory import *
 # -
 __doc__ = """
 
-  class NonSidereal(object) - Creates an object to calculate non_sidereal observation(s) between limits
+  class NonSidereal(ObsParams) - Creates an object to calculate non_sidereal observation(s) between limits
   
   Example:
     from src.observations.non_sidereal import *
@@ -23,6 +22,7 @@ __doc__ = """
     _i = Instrument('Mont4k')
     _o = NonSidereal(telescope=_t, instrument=_i, log=_l)
     _o.__dump__()
+    _o.__non_sidereal_dump__()
     _o.calculate()
 
 """
@@ -32,27 +32,21 @@ __doc__ = """
 # class: NonSidereal()
 # -
 # noinspection PyBroadException,PyUnresolvedReferences
-class NonSidereal(object):
+class NonSidereal(ObsParams):
     """ generate non-sidereal observation(s) """
-
-    # +
-    # class variable(s) - TO BE REMOVED!
-    # -
-    binning = 'None'   # preferred binning
-    cone_angle = 90.0  # preferred cone search
-    filter = 'V'       # preferred filter
 
     # +
     # method: __init__()
     # -
     def __init__(self, telescope=None, instrument=None, log=None):
 
-        # get input(s)
-        self.telescope = telescope
-        self.instrument = instrument
-        self.log = log
+        # init super-class
+        super().__init__(telescope, instrument, log)
 
-        # initialize all variable(s)
+        # initialize other variable(s)
+        self.__telescope = self.telescope
+        self.__instrument = self.instrument
+        self.__log = self.log
         self.__begin = None
         self.__begin_jd = None
         self.__db = None
@@ -71,6 +65,8 @@ class NonSidereal(object):
         self.__mjd_end = None
         self.__mjd_start = None
         self.__msg = None
+        self.__non_sidereal_utc_jd = None
+        self.__non_sidereal_utc = None
         self.__num_non_sidereal = None
         self.__query = None
         self.__request_args = None
@@ -91,69 +87,9 @@ class NonSidereal(object):
         self.__zenith_ra_deg = None
 
     # +
-    # decorator(s)
+    # method: __non_sidereal_dump__()
     # -
-    @property
-    def telescope(self):
-        return self.__telescope
-
-    @telescope.setter
-    def telescope(self, telescope=None):
-        # use the input telescope object
-        if isinstance(telescope, telescopes.factory.Telescope):
-            self.__telescope = telescope
-        # create a new telescope object
-        elif isinstance(telescope, str) and telescope in TEL__TELESCOPES:
-            self.__telescope = Telescope(name=telescope)
-        # unrecognized input
-        else:
-            self.__telescope = None
-        # on failure, return error
-        if self.__telescope is None:
-            raise Exception(f'invalid input, telescope={telescope}')
-
-    @property
-    def instrument(self):
-        return self.__instrument
-
-    @instrument.setter
-    def instrument(self, instrument=None):
-        # use the input instrument object
-        if isinstance(instrument, instruments.factory.Instrument):
-            self.__instrument = instrument
-        # create a new instrument object
-        elif isinstance(instrument, str) and instrument in INS__INSTRUMENTS:
-            self.__instrument = Instrument(name=instrument)
-        # unrecognized input
-        else:
-            self.__instrument = None
-        # on failure, return error
-        if self.__instrument is None:
-            raise Exception(f'invalid input, instrument={instrument}')
-        # unsupported combination, report error
-        if self.__instrument.name not in INS__SUPPORTED[self.__telescope.name]:
-            raise Exception(f'invalid combination, instrument={self.__instrument.name}, telescope={self.__telescope.name}')
-
-    @property
-    def log(self):
-        return self.__log
-
-    @log.setter
-    def log(self, log=None):
-        # use the input logger object
-        if isinstance(log, logging.Logger):
-            self.__log = log
-        # create a new logger object
-        elif isinstance(log, bool):
-            self.__log = Logger(f'{self.__telescope.name}-{self.__instrument.name}').logger
-        # do nothing
-        else:
-            self.__log = None
-
-    # +
-    # method: __dump__()
-    # -
-    def __dump__(self, item=None):
+    def __non_sidereal_dump__(self, item=None):
         """ dump variable(s) """
         if item is None:
             self.__msg = ''
@@ -189,6 +125,8 @@ class NonSidereal(object):
             self.__log.debug(f'self.__mjd_end={self.__mjd_end}')
             self.__log.debug(f'self.__mjd_start={self.__mjd_start}')
             self.__log.debug(f'self.__msg={self.__msg}')
+            self.__log.debug(f"self.__non_sidereal_utc = {self.__non_sidereal_utc}")
+            self.__log.debug(f"self.__non_sidereal_utc_jd = {self.__non_sidereal_utc_jd}")
             self.__log.debug(f"self.__num_non_sidereal = {self.__num_non_sidereal}")
             self.__log.debug(f'self.__query={self.__query}')
             self.__log.debug(f'self.__request_args={self.__request_args}')
@@ -240,13 +178,9 @@ class NonSidereal(object):
 
         if self.__log:
             self.__log.debug(f"self.__zenith_ra={self.__zenith_ra}")
-            self.__log.debug(f"self.__zenith_ra_deg={self.__zenith_ra_deg}")
             self.__log.debug(f"self.__zenith_dec={self.__zenith_dec}")
+            self.__log.debug(f"self.__zenith_ra_deg={self.__zenith_ra_deg}")
             self.__log.debug(f"self.__zenith_dec_deg={self.__zenith_dec_deg}")
-            self.__log.debug(f"self.__dec_min={self.__dec_min}")
-            self.__log.debug(f"self.__dec_max={self.__dec_max}")
-            self.__log.debug(f"self.__ra_min={self.__ra_min}")
-            self.__log.debug(f"self.__ra_max={self.__ra_max}")
             self.__log.debug(f"self.__non_sidereal_utc={self.__non_sidereal_utc}")
             self.__log.debug(f"self.__non_sidereal_utc_jd={self.__non_sidereal_utc_jd}")
             self.__log.debug(f"self.__mjd_start={self.__mjd_start}")
@@ -257,16 +191,10 @@ class NonSidereal(object):
         self.__request_args = {
             'airmass__gte': self.__telescope.min_airmass,
             'airmass__lte': self.__telescope.max_airmass,
-            'binning': NonSidereal.binning,
-            'cone': f'{self.__zenith_ra_deg},{self.__zenith_dec_deg},{NonSidereal.cone_angle}',
-            #'begin_mjd__lte': self.__mjd_end,
-            #'dec_deg__gte': self.__dec_min,
-            #'dec_deg__lte': self.__dec_max,
-            #'end_mjd__gte': self.__mjd_start,
-            'filter_name': NonSidereal.filter,
+            'binning': self.non_sidereal_binning,
+            'cone': f'{self.__zenith_ra_deg:.4f},{self.__zenith_dec_deg:.4f},{self.non_sidereal_cone_angle}',
+            'filter_name': self.non_sidereal_filter,
             'instrument': self.__instrument.name,
-            #'ra_deg__gte': self.__ra_min,
-            #'ra_deg__lte': self.__ra_max,
             'non_sidereal': 'true',
             'telescope': self.__telescope.name,
             'exclude_username': 'rts2'
@@ -291,8 +219,8 @@ class NonSidereal(object):
             if self.__telescope.is_observable(self.__begin, f"{_e['ra_hms']} {_e['dec_dms']}"):
                 if self.__log:
                     self.__log.debug(f"{_e['object_name']} is up and within "
-                                     f"RA={NonSidereal.cone_angle}{UNI__DEGREE}, "
-                                     f"Dec={NonSidereal.cone_angle}{UNI__DEGREE} of zenith")
+                                     f"RA={self.non_sidereal_cone_angle}{UNI__DEGREE}, "
+                                     f"Dec={self.non_sidereal_cone_angle}{UNI__DEGREE} of zenith")
                 if _e['binning'] not in self.__targets:
                     self.__targets[f"{_e['binning']}"] = [_e]
                 else:

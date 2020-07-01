@@ -21,7 +21,7 @@ INVALID_INPUTS = [None, get_hash(), {}, [], ()]
 # doc string(s)
 # -
 __doc__ = """
-  % python3 -m pytest test_init.py
+  % python3.7 -m pytest -p no:warnings test_init.py
 """
 
 

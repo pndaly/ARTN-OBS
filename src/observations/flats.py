@@ -4,8 +4,7 @@
 # +
 #  import(s)
 # -
-from src.instruments.factory import *
-from src.telescopes.factory import *
+from src.observations.obsparams import *
 
 
 # +
@@ -13,7 +12,7 @@ from src.telescopes.factory import *
 # -
 __doc__ = """
 
-  class Flats(object) - Creates an object to calculate flat observation(s) between limits
+  class Flats(ObsParams) - Creates an object to calculate flat observation(s) between limits
   
   Example:
     from src.observations.flats import *
@@ -22,6 +21,7 @@ __doc__ = """
     _i = Instrument('Mont4k')
     _o = Flats(telescope=_t, instrument=_i, log=_l)
     _o.__dump__()
+    _o.__flats_dump__()
     _o.calculate()
 
 """
@@ -31,7 +31,7 @@ __doc__ = """
 # class: Flats()
 # -
 # noinspection PyBroadException,PyUnresolvedReferences
-class Flats(object):
+class Flats(ObsParams):
     """ generate flat observation(s) """
 
     # +
@@ -39,12 +39,13 @@ class Flats(object):
     # -
     def __init__(self, telescope=None, instrument=None, log=None):
 
-        # get input(s)
-        self.telescope = telescope
-        self.instrument = instrument
-        self.log = log
+        # init super-class
+        super().__init__(telescope, instrument, log)
 
-        # initialize all variable(s)
+        # initialize other variable(s)
+        self.__telescope = self.telescope
+        self.__instrument = self.instrument
+        self.__log = self.log
         self.__begin = None
         self.__begin_jd = None
         self.__delta = None
@@ -70,69 +71,9 @@ class Flats(object):
         self.__ave_read_time = sum(_v for _v in self.__read_times.values()) / len(self.__read_times)
 
     # +
-    # decorator(s)
+    # method: __flats_dump__()
     # -
-    @property
-    def telescope(self):
-        return self.__telescope
-
-    @telescope.setter
-    def telescope(self, telescope=None):
-        # use the input telescope object
-        if isinstance(telescope, telescopes.factory.Telescope):
-            self.__telescope = telescope
-        # create a new telescope object
-        elif isinstance(telescope, str) and telescope in TEL__TELESCOPES:
-            self.__telescope = Telescope(name=telescope)
-        # unrecognized input
-        else:
-            self.__telescope = None
-        # on failure, return error
-        if self.__telescope is None:
-            raise Exception(f'invalid input, telescope={telescope}')
-
-    @property
-    def instrument(self):
-        return self.__instrument
-
-    @instrument.setter
-    def instrument(self, instrument=None):
-        # use the input instrument object
-        if isinstance(instrument, instruments.factory.Instrument):
-            self.__instrument = instrument
-        # create a new instrument object
-        elif isinstance(instrument, str) and instrument in INS__INSTRUMENTS:
-            self.__instrument = Instrument(name=instrument)
-        else:
-            self.__instrument = None
-        # on failure, return error
-        if self.__instrument is None:
-            raise Exception(f'invalid input, instrument={instrument}')
-        # unsupported combination, report error
-        if self.__instrument.name not in INS__SUPPORTED[self.__telescope.name]:
-            raise Exception(f'invalid combination, instrument={self.__instrument.name}, '
-                            f'telescope={self.__telescope.name}')
-
-    @property
-    def log(self):
-        return self.__log
-
-    @log.setter
-    def log(self, log=None):
-        # use the input logger object
-        if isinstance(log, logging.Logger):
-            self.__log = log
-        # create a new logger object
-        elif isinstance(log, bool):
-            self.__log = Logger(f'{self.__telescope.name}-{self.__instrument.name}').logger
-        # do nothing
-        else:
-            self.__log = None
-
-    # +
-    # method: __dump__()
-    # -
-    def __dump__(self, item=None):
+    def __flats_dump__(self, item=None):
         """ dump variable(s) """
         if item is None:
             self.__msg = ''
@@ -177,7 +118,7 @@ class Flats(object):
     # method: calc_num_flats()
     # -
     def calc_num_flats(self):
-        """ calculates the number of exposures and and time taken """
+        """ calculates the number of exposures and time taken """
         self.__total_exps = len(self.__instrument.flat_exposure_times) * len(self.__instrument.readout_times)
         self.__total_time = (self.__ave_flat_time + self.__ave_read_time) * self.__total_exps
         self.__num_flat_sets = int(self.__seconds / self.__total_time)
@@ -231,16 +172,17 @@ class Flats(object):
             self.__log.debug(f"{self.__begin[:-7]} observe {self.__num_flats} flat(s)")
             self.__log.debug(f"{self.__end_time[:-7]} finished {self.__num_flats} flats, delta={self.__delta:.1f}s")
 
-        # if we have some time to spare, do some more V flats
+        # if we have some time to spare, do some more flats in preferred filter
         if self.__delta > 0.0:
             for _b in self.__read_times:
-                self.__time_per_observation = self.__flat_times['V'] + self.__read_times[_b]
+                self.__time_per_observation = self.__flat_times[self.flat_filter] + self.__read_times[_b]
                 if self.__log:
-                    self.__log.debug(f"Filter: 'V', exposure time={self.__flat_times['V']}s, "
+                    self.__log.debug(f"Filter: {self.flat_filter}, "
+                                     f"exposure time={self.__flat_times[self.flat_filter]}s, "
                                      f"Binning: {_b}, readout time={self.__read_times[_b]}s, "
                                      f"time_per_observation={self.__time_per_observation}s")
                 pdh(f"{jd_to_isot(self.__start_flats_jd)[:-7]} observe {self.__num_flat_sets} flat(s) "
-                    f"[filter: 'V', binning: {_b}]", color='red')
+                    f"[filter: {self.flat_filter}, binning: {_b}]", color='red')
                 self.__start_flats_jd += (self.__time_per_observation * self.__num_flat_sets) / OBS_SECONDS_PER_DAY
                 self.__delta = (self.__end_flats_jd - self.__start_flats_jd) * OBS_SECONDS_PER_DAY
                 if self.__delta < 0.0:

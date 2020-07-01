@@ -8,7 +8,6 @@ from src.observations.darks import *
 from src.observations.flats import *
 from src.observations.foci import *
 from src.observations.non_sidereal import *
-from src.observations.obsparams import *
 from src.observations.sidereal import *
 
 import argparse
@@ -46,6 +45,9 @@ def artn_schedule(instrument=random.choice(TEL__INSTRUMENTS),
         _sid = Sidereal(instrument=_ins, telescope=_tel, log=_log)
     except:
         raise Exception(f'failed to create critical observing components')
+    else:
+        if verbose:
+            _obsp.__dump__()
 
     # start-of-night message
     pdh(f"{_tel.name} telescope observing schedule for {_obsp.mst.split('T')[0]}".upper(), color='green')
@@ -56,55 +58,95 @@ def artn_schedule(instrument=random.choice(TEL__INSTRUMENTS),
             pdh(f"{_obsp.observing_night_jd_r.get(_k, '---')[:-3].replace('_', ' '):20s}: {jd_to_isot(_k)[:-7]}",
                 color='cyan')
 
-    # evening dark(s)
-    _iso, _jd = _dark.calculate(begin=jd_to_isot(_obsp.night_start_jd - ObsParams.time_for_darks), end=_obsp.sun_set)
+    # +
+    # evening dark(s), typically and hour or so before sunset
+    # -
+    _dark_end_iso, _dark_end_jd = _dark.calculate(begin=jd_to_isot(_dark.night_start_jd - _dark.time_for_darks),
+                                                  end=_dark.sun_set)
     if verbose:
-        _dark.__dump__()
+        _dark.__darks_dump__()
 
-    # evening flat(s)
-    _iso, _jd = _flat.calculate(begin=_iso, end=_obsp.dusk_nautical)
+    # +
+    # evening flat(s), typically after sunset and before nautical dusk
+    # -
+    _flat_end_iso, _flat_end_jd = _flat.calculate(begin=_dark_end_iso, end=_flat.dusk_nautical)
     if verbose:
-        _flat.__dump__()
+        _flat.__flats_dump__()
 
-    # initial foci
-    _iso, _jd = _foci.calculate(begin=_iso, end=jd_to_isot(_jd + ObsParams.time_for_foci))
+    # +
+    # initial foci, typically after nautical dusk
+    # -
+    _foci_end_iso, _foci_end_jd = _foci.calculate(begin=_flat_end_iso,
+                                                  end=jd_to_isot(_flat_end_jd + _foci.time_for_foci))
+    if verbose:
+        _foci.__foci_dump__()
+
+    # foci - an example of widening the search area
+    _foci.foci_cone_angle = 180.0
     if verbose:
         _foci.__dump__()
-
-    # evening non-sidereal object(s)
-    _iso, _jd = _nsid.calculate(begin=_iso, end=jd_to_isot(_jd + ObsParams.time_for_non_sidereal))
+    _foci_end_iso, _foci_end_jd = _foci.calculate(begin=_foci_end_iso,
+                                                  end=jd_to_isot(_foci_end_jd + _foci.time_for_foci))
     if verbose:
-        _nsid.__dump__()
+        _foci.__foci_dump__()
 
-    # sidereal object(s)
-    _iso, _jd = _sid.calculate(begin=_iso, end=jd_to_isot(_jd + ObsParams.time_for_sidereal))
+    # +
+    # evening non-sidereal object(s), typically for half an hour or so at the start and end of night
+    # -
+    _nsid.non_sidereal_cone_angle = 90.0
+    _nsid_end_iso, _nsid_end_jd = _nsid.calculate(begin=_foci_end_iso,
+                                                  end=jd_to_isot(_foci_end_jd + _nsid.time_for_non_sidereal))
     if verbose:
-        _sid.__dump__()
+        _nsid.__non_sidereal_dump__()
 
-    # midnight foci
-    _iso, _jd = _foci.calculate(begin=_iso, end=jd_to_isot(_jd + ObsParams.time_for_foci))
+    # +
+    # sidereal object(s), typically a 3-hour observing block
+    # -
+    _sid.sidereal_cone_angle = 180.0
+    _sid_end_iso, _sid_end_jd = _sid.calculate(begin=_nsid_end_iso,
+                                               end=jd_to_isot(_nsid_end_jd + _sid.time_for_sidereal))
     if verbose:
-        _foci.__dump__()
+        _sid.__sidereal_dump__()
 
-    # sidereal object(s)
-    _iso, _jd = _sid.calculate(begin=_iso, end=jd_to_isot(_jd + ObsParams.time_for_sidereal))
+    # +
+    # midnight foci, typically re-check focus around midnight
+    # -
+    _foci_end_iso, _foci_end_jd = _foci.calculate(begin=_sid_end_iso,
+                                                  end=jd_to_isot(_sid_end_jd + _foci.time_for_foci))
     if verbose:
-        _sid.__dump__()
+        _foci.__foci_dump__()
 
-    # morning non-sidereal object(s)
-    _iso, _jd = _nsid.calculate(begin=_iso, end=_obsp.dawn_nautical)
+    # +
+    # sidereal object(s), typically a 3-hour observing block
+    # -
+    _sid.sidereal_cone_angle = 180.0
+    _sid_end_iso, _sid_end_jd = _sid.calculate(begin=_foci_end_iso,
+                                               end=jd_to_isot(_foci_end_jd + _sid.time_for_sidereal))
     if verbose:
-        _nsid.__dump__()
+        _sid.__sidereal_dump__()
 
-    # morning flat(s)
-    _iso, _jd = _flat.calculate(begin=_obsp.dawn_nautical, end=_obsp.sun_rise)
+    # +
+    # morning non-sidereal object(s), typically for half an hour or so before nautical dawn
+    # -
+    _nsid.non_sidereal_cone_angle = 180.0
+    _nsid_end_iso, _nsid_end_jd = _nsid.calculate(begin=_sid_end_iso, end=_nsid.dawn_nautical)
     if verbose:
-        _flat.__dump__()
+        _nsid.__non_sidereal_dump__()
 
-    # morning dark(s)
-    _iso, _jd = _dark.calculate(begin=_iso, end=jd_to_isot(_obsp.sun_rise_jd + ObsParams.time_for_darks))
+    # +
+    # morning flat(s), typically after nautical dawn but before sunrise
+    # -
+    _flat_end_iso, _flat_end_jd = _flat.calculate(begin=_flat.dawn_nautical, end=_flat.sun_rise)
     if verbose:
-        _dark.__dump__()
+        _flat.__flats_dump__()
+
+    # +
+    # morning dark(s), typically an hour or so after sunrise
+    # -
+    _dark_end_iso, _dark_end_jd = _dark.calculate(begin=_flat_end_iso,
+                                                  end=jd_to_isot(_dark.sun_rise_jd + _dark.time_for_darks))
+    if verbose:
+        _dark.__darks_dump__()
 
     # end-of-night message
     pdh(f"{_tel.name} telescope observing schedule for {_obsp.mst.split('T')[0]}".upper(), color='green')

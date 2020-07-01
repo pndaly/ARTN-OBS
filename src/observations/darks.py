@@ -4,8 +4,7 @@
 # +
 #  import(s)
 # -
-from src.instruments.factory import *
-from src.telescopes.factory import *
+from src.observations.obsparams import *
 
 
 # +
@@ -13,7 +12,7 @@ from src.telescopes.factory import *
 # -
 __doc__ = """
 
-  class Darks(object) - Creates an object to calculate dark observation(s) between limits
+  class Darks(ObsParams) - Creates an object to calculate dark observation(s) between limits
   
   Example:
     from src.observations.darks import *
@@ -22,6 +21,7 @@ __doc__ = """
     _i = Instrument('Mont4k')
     _o = Darks(telescope=_t, instrument=_i, log=_l)
     _o.__dump__()
+    _o.__darks_dump__()
     _o.calculate()
 
 """
@@ -31,7 +31,7 @@ __doc__ = """
 # class: Darks()
 # -
 # noinspection PyBroadException,PyUnresolvedReferences
-class Darks(object):
+class Darks(ObsParams):
     """ generate dark observation(s) """
 
     # +
@@ -39,12 +39,13 @@ class Darks(object):
     # -
     def __init__(self, telescope=None, instrument=None, log=None):
 
-        # get input(s)
-        self.telescope = telescope
-        self.instrument = instrument
-        self.log = log
+        # init super-class
+        super().__init__(telescope, instrument, log)
 
-        # initialize all variable(s)
+        # initialize other variable(s)
+        self.__telescope = self.telescope
+        self.__instrument = self.instrument
+        self.__log = self.log
         self.__begin = None
         self.__begin_jd = None
         self.__delta = None
@@ -58,69 +59,9 @@ class Darks(object):
         self.__seconds = None
 
     # +
-    # decorator(s)
+    # method: __darks_dump__()
     # -
-    @property
-    def telescope(self):
-        return self.__telescope
-
-    @telescope.setter
-    def telescope(self, telescope=None):
-        # use the input telescope object
-        if isinstance(telescope, telescopes.factory.Telescope):
-            self.__telescope = telescope
-        # create a new telescope object
-        elif isinstance(telescope, str) and telescope in TEL__TELESCOPES:
-            self.__telescope = Telescope(name=telescope)
-        # unrecognized input
-        else:
-            self.__telescope = None
-        # on failure, return error
-        if self.__telescope is None:
-            raise Exception(f'invalid input, telescope={telescope}')
-
-    @property
-    def instrument(self):
-        return self.__instrument
-
-    @instrument.setter
-    def instrument(self, instrument=None):
-        # use the input instrument object
-        if isinstance(instrument, instruments.factory.Instrument):
-            self.__instrument = instrument
-        # create a new instrument object
-        elif isinstance(instrument, str) and instrument in INS__INSTRUMENTS:
-            self.__instrument = Instrument(name=instrument)
-        # unrecognized input
-        else:
-            self.__instrument = None
-        # on failure, return error
-        if self.__instrument is None:
-            raise Exception(f'invalid input, instrument={instrument}')
-        # unsupported combination, report error
-        if self.__instrument.name not in INS__SUPPORTED[self.__telescope.name]:
-            raise Exception(f'invalid combination, instrument={self.__instrument.name}, telescope={self.__telescope.name}')
-
-    @property
-    def log(self):
-        return self.__log
-
-    @log.setter
-    def log(self, log=None):
-        # use the input logger object
-        if isinstance(log, logging.Logger):
-            self.__log = log
-        # create a new logger object
-        elif isinstance(log, bool):
-            self.__log = Logger(f'{self.__telescope.name}-{self.__instrument.name}').logger
-        # do nothing
-        else:
-            self.__log = None
-
-    # +
-    # method: __dump__()
-    # -
-    def __dump__(self, item=None):
+    def __darks_dump__(self, item=None):
         """ dump variable(s) """
         if item is None:
             self.__msg = ''
@@ -162,6 +103,7 @@ class Darks(object):
         self.__end = end
         self.__begin_jd = isot_to_jd(self.__begin)
         self.__end_jd = isot_to_jd(self.__end)
+
         self.__seconds = (self.__end_jd - self.__begin_jd) * OBS_SECONDS_PER_DAY
         self.__num_darks = math.ceil(self.__seconds / INS__READOUT[self.__instrument.name])
         self.__elapsed_time_jd = self.__num_darks * self.__instrument.readout / OBS_SECONDS_PER_DAY

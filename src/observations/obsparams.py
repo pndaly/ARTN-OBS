@@ -27,19 +27,27 @@ __doc__ = """
 
 
 # +
+# constant(s)
+# -
+OBSPARAM_DARK_CONE_ANGLE = math.nan
+OBSPARAM_FLAT_CONE_ANGLE = math.nan
+OBSPARAM_FOCI_CONE_ANGLE = 35.0
+OBSPARAM_HOURS_PER_DAY = 24.0
+OBSPARAM_NON_SIDEREAL_CONE_ANGLE = 20.0
+OBSPARAM_SIDEREAL_CONE_ANGLE = 25.0
+OBSPARAM_TIME_FOR_DARKS = 1.0 / OBSPARAM_HOURS_PER_DAY
+OBSPARAM_TIME_FOR_FLATS = 1.5 / OBSPARAM_HOURS_PER_DAY
+OBSPARAM_TIME_FOR_FOCI = 0.5 / OBSPARAM_HOURS_PER_DAY
+OBSPARAM_TIME_FOR_NON_SIDEREAL = 0.5 / OBSPARAM_HOURS_PER_DAY
+OBSPARAM_TIME_FOR_SIDEREAL = 3.0 / OBSPARAM_HOURS_PER_DAY
+
+
+# +
 # class: ObsParams()
 # -
 # noinspection PyBroadException,PyUnresolvedReferences
 class ObsParams(object):
     """ store observation parameter(s) """
-
-    # +
-    # class variable(s)
-    # -
-    time_for_darks = 1.0 / 24.0
-    time_for_foci = 0.5 / 24.0
-    time_for_non_sidereal = 0.5 / 24.0
-    time_for_sidereal = 3.0 / 24.0
 
     # +
     # method: __init__()
@@ -50,6 +58,31 @@ class ObsParams(object):
         self.telescope = telescope
         self.instrument = instrument
         self.log = log
+
+        # other getter/setter variable(s)
+        self.__time_for_darks = OBSPARAM_TIME_FOR_DARKS
+        self.__time_for_flats = OBSPARAM_TIME_FOR_FLATS
+        self.__time_for_foci = OBSPARAM_TIME_FOR_FOCI
+        self.__time_for_non_sidereal = OBSPARAM_TIME_FOR_NON_SIDEREAL
+        self.__time_for_sidereal = OBSPARAM_TIME_FOR_SIDEREAL
+
+        self.__dark_cone_angle = OBSPARAM_DARK_CONE_ANGLE
+        self.__flat_cone_angle = OBSPARAM_FLAT_CONE_ANGLE
+        self.__foci_cone_angle = OBSPARAM_FOCI_CONE_ANGLE
+        self.__non_sidereal_cone_angle = OBSPARAM_NON_SIDEREAL_CONE_ANGLE
+        self.__sidereal_cone_angle = OBSPARAM_SIDEREAL_CONE_ANGLE
+
+        self.__dark_filter = random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+        self.__flat_filter = random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+        self.__foci_filter = random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+        self.__non_sidereal_filter = random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+        self.__sidereal_filter = random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+
+        self.__dark_binning = random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+        self.__flat_binning = random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+        self.__foci_binning = random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+        self.__non_sidereal_binning = random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+        self.__sidereal_binning = random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
 
         # initialize all variable(s)
         self.__dawn_astronomical = None
@@ -130,7 +163,8 @@ class ObsParams(object):
             raise Exception(f'invalid input, instrument={instrument}')
         # unsupported combination, report error
         if self.__instrument.name not in INS__SUPPORTED[self.__telescope.name]:
-            raise Exception(f'invalid combination, instrument={self.__instrument.name}, telescope={self.__telescope.name}')
+            raise Exception(f'invalid combination, instrument={self.__instrument.name}, '
+                            f'telescope={self.__telescope.name}')
 
     @property
     def log(self):
@@ -147,6 +181,212 @@ class ObsParams(object):
         # do nothing
         else:
             self.__log = None
+
+    # +
+    # other getter(s) / setter(s)
+    # -
+    @property
+    def dark_cone_angle(self):
+        return self.__dark_cone_angle
+
+    @dark_cone_angle.setter
+    def dark_cone_angle(self, dark_cone_angle=OBSPARAM_DARK_CONE_ANGLE):
+        self.__dark_cone_angle = dark_cone_angle if \
+            (isinstance(dark_cone_angle, float) and (0.0 <= dark_cone_angle <= 180.0)) else OBSPARAM_DARK_CONE_ANGLE
+
+    @property
+    def flat_cone_angle(self):
+        return self.__flat_cone_angle
+
+    @flat_cone_angle.setter
+    def flat_cone_angle(self, flat_cone_angle=OBSPARAM_FLAT_CONE_ANGLE):
+        self.__flat_cone_angle = flat_cone_angle if \
+            (isinstance(flat_cone_angle, float) and (0.0 <= flat_cone_angle <= 180.0)) else OBSPARAM_FLAT_CONE_ANGLE
+
+    @property
+    def foci_cone_angle(self):
+        return self.__foci_cone_angle
+
+    @foci_cone_angle.setter
+    def foci_cone_angle(self, foci_cone_angle=OBSPARAM_FOCI_CONE_ANGLE):
+        self.__foci_cone_angle = foci_cone_angle if \
+            (isinstance(foci_cone_angle, float) and (0.0 <= foci_cone_angle <= 180.0)) else OBSPARAM_FOCI_CONE_ANGLE
+
+    @property
+    def non_sidereal_cone_angle(self):
+        return self.__non_sidereal_cone_angle
+
+    @non_sidereal_cone_angle.setter
+    def non_sidereal_cone_angle(self, non_sidereal_cone_angle=OBSPARAM_NON_SIDEREAL_CONE_ANGLE):
+        self.__non_sidereal_cone_angle = non_sidereal_cone_angle if \
+            (isinstance(non_sidereal_cone_angle, float) and (0.0 <= non_sidereal_cone_angle <= 180.0)) else \
+            OBSPARAM_NON_SIDEREAL_CONE_ANGLE
+
+    @property
+    def sidereal_cone_angle(self):
+        return self.__sidereal_cone_angle
+
+    @sidereal_cone_angle.setter
+    def sidereal_cone_angle(self, sidereal_cone_angle=OBSPARAM_SIDEREAL_CONE_ANGLE):
+        self.__sidereal_cone_angle = sidereal_cone_angle if \
+            (isinstance(sidereal_cone_angle, float) and (0.0 <= sidereal_cone_angle <= 180.0)) else \
+            OBSPARAM_SIDEREAL_CONE_ANGLE
+
+    @property
+    def dark_binning(self):
+        return self.__dark_binning
+
+    @dark_binning.setter
+    def dark_binning(self, dark_binning=None):
+        self.__dark_binning = dark_binning if \
+            (isinstance(dark_binning, str) and dark_binning.strip() != '' and
+             dark_binning in INS__BINNING[self.__instrument.name]) else \
+            random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+
+    @property
+    def flat_binning(self):
+        return self.__flat_binning
+
+    @flat_binning.setter
+    def flat_binning(self, flat_binning=None):
+        self.__flat_binning = flat_binning if \
+            (isinstance(flat_binning, str) and flat_binning.strip() != '' and
+             flat_binning in INS__BINNING[self.__instrument.name]) else \
+            random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+
+    @property
+    def foci_binning(self):
+        return self.__foci_binning
+
+    @foci_binning.setter
+    def foci_binning(self, foci_binning=None):
+        self.__foci_binning = foci_binning if \
+            (isinstance(foci_binning, str) and foci_binning.strip() != '' and
+             foci_binning in INS__BINNING[self.__instrument.name]) else \
+            random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+
+    @property
+    def non_sidereal_binning(self):
+        return self.__non_sidereal_binning
+
+    @non_sidereal_binning.setter
+    def non_sidereal_binning(self, non_sidereal_binning=None):
+        self.__non_sidereal_binning = non_sidereal_binning if \
+            (isinstance(non_sidereal_binning, str) and non_sidereal_binning.strip() != '' and
+             non_sidereal_binning in INS__BINNING[self.__instrument.name]) else \
+            random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+
+    @property
+    def sidereal_binning(self):
+        return self.__sidereal_binning
+
+    @sidereal_binning.setter
+    def sidereal_binning(self, sidereal_binning=None):
+        self.__sidereal_binning = sidereal_binning if \
+            (isinstance(sidereal_binning, str) and sidereal_binning.strip() != '' and
+             sidereal_binning in INS__BINNING[self.__instrument.name]) else \
+            random.choice(INS__BINNING[self.__instrument.name].split(',')).strip()
+
+    @property
+    def dark_filter(self):
+        return self.__dark_filter
+
+    @dark_filter.setter
+    def dark_filter(self, dark_filter=None):
+        self.__dark_filter = dark_filter if \
+            (isinstance(dark_filter, str) and dark_filter.strip() != '' and
+             dark_filter in INS__FILTERS[self.__instrument.name]) else \
+            random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+
+    @property
+    def flat_filter(self):
+        return self.__flat_filter
+
+    @flat_filter.setter
+    def flat_filter(self, flat_filter=None):
+        self.__flat_filter = flat_filter if \
+            (isinstance(flat_filter, str) and flat_filter.strip() != '' and
+             flat_filter in INS__FILTERS[self.__instrument.name]) else \
+            random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+
+    @property
+    def foci_filter(self):
+        return self.__foci_filter
+
+    @foci_filter.setter
+    def foci_filter(self, foci_filter=None):
+        self.__foci_filter = foci_filter if \
+            (isinstance(foci_filter, str) and foci_filter.strip() != '' and
+             foci_filter in INS__FILTERS[self.__instrument.name]) else \
+            random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+
+    @property
+    def non_sidereal_filter(self):
+        return self.__non_sidereal_filter
+
+    @non_sidereal_filter.setter
+    def non_sidereal_filter(self, non_sidereal_filter=None):
+        self.__non_sidereal_filter = non_sidereal_filter if \
+            (isinstance(non_sidereal_filter, str) and non_sidereal_filter.strip() != '' and
+             non_sidereal_filter in INS__FILTERS[self.__instrument.name]) else \
+            random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+
+    @property
+    def sidereal_filter(self):
+        return self.__sidereal_filter
+
+    @sidereal_filter.setter
+    def sidereal_filter(self, sidereal_filter=None):
+        self.__sidereal_filter = sidereal_filter if \
+            (isinstance(sidereal_filter, str) and sidereal_filter.strip() != '' and
+             sidereal_filter in INS__FILTERS[self.__instrument.name]) else \
+            random.choice(INS__FILTERS[self.__instrument.name].split(',')).strip()
+
+    @property
+    def time_for_darks(self):
+        return self.__time_for_darks
+
+    @time_for_darks.setter
+    def time_for_darks(self, time_for_darks=OBSPARAM_TIME_FOR_DARKS):
+        self.__time_for_darks = time_for_darks if \
+            (isinstance(time_for_darks, float) and (0.0 < time_for_darks < 1.0)) else OBSPARAM_TIME_FOR_DARKS
+
+    @property
+    def time_for_flats(self):
+        return self.__time_for_flats
+
+    @time_for_flats.setter
+    def time_for_flats(self, time_for_flats=OBSPARAM_TIME_FOR_FLATS):
+        self.__time_for_flats = time_for_flats if \
+            (isinstance(time_for_flats, float) and (0.0 < time_for_flats < 1.0)) else OBSPARAM_TIME_FOR_FLATS
+
+    @property
+    def time_for_foci(self):
+        return self.__time_for_foci
+
+    @time_for_foci.setter
+    def time_for_foci(self, time_for_foci=OBSPARAM_TIME_FOR_FOCI):
+        self.__time_for_foci = time_for_foci if \
+            (isinstance(time_for_foci, float) and (0.0 < time_for_foci < 1.0)) else OBSPARAM_TIME_FOR_FOCI
+
+    @property
+    def time_for_non_sidereal(self):
+        return self.__time_for_non_sidereal
+
+    @time_for_non_sidereal.setter
+    def time_for_non_sidereal(self, time_for_non_sidereal=OBSPARAM_TIME_FOR_NON_SIDEREAL):
+        self.__time_for_non_sidereal = time_for_non_sidereal if \
+            (isinstance(time_for_non_sidereal, float) and (0.0 < time_for_non_sidereal < 1.0)) else \
+            OBSPARAM_TIME_FOR_NON_SIDEREAL
+
+    @property
+    def time_for_sidereal(self):
+        return self.__time_for_sidereal
+
+    @time_for_sidereal.setter
+    def time_for_sidereal(self, time_for_sidereal=OBSPARAM_TIME_FOR_SIDEREAL):
+        self.__time_for_sidereal = time_for_sidereal if \
+            (isinstance(time_for_sidereal, float) and (0.0 < time_for_sidereal < 1.0)) else OBSPARAM_TIME_FOR_SIDEREAL
 
     # +
     # getter(s)
@@ -330,8 +570,28 @@ class ObsParams(object):
             self.__log.debug(f"self.__sun_set={self.__sun_set}")
             self.__log.debug(f"self.__sun_set_jd={self.__sun_set_jd}")
             self.__log.debug(f"self.__telescope={self.__telescope}")
+            self.__log.debug(f"self.__time_for_darks={self.__time_for_darks}")
+            self.__log.debug(f"self.__time_for_flats={self.__time_for_flats}")
+            self.__log.debug(f"self.__time_for_foci={self.__time_for_foci}")
+            self.__log.debug(f"self.__time_for_non_sidereal={self.__time_for_non_sidereal}")
+            self.__log.debug(f"self.__time_for_sidereal={self.__time_for_sidereal}")
             self.__log.debug(f"self.__utc={self.__utc}")
             self.__log.debug(f"self.__utc_jd={self.__utc_jd}")
+            self.__log.debug(f"self.__dark_binning={self.__dark_binning}")
+            self.__log.debug(f"self.__flat_binning={self.__flat_binning}")
+            self.__log.debug(f"self.__foci_binning={self.__foci_binning}")
+            self.__log.debug(f"self.__non_sidereal_binning={self.__non_sidereal_binning}")
+            self.__log.debug(f"self.__sidereal_binning={self.__sidereal_binning}")
+            self.__log.debug(f"self.__dark_filter={self.__dark_filter}")
+            self.__log.debug(f"self.__flat_filter={self.__flat_filter}")
+            self.__log.debug(f"self.__foci_filter={self.__foci_filter}")
+            self.__log.debug(f"self.__non_sidereal_filter={self.__non_sidereal_filter}")
+            self.__log.debug(f"self.__sidereal_filter={self.__sidereal_filter}")
+            self.__log.debug(f"self.__dark_cone_angle={self.__dark_cone_angle}")
+            self.__log.debug(f"self.__flat_cone_angle={self.__flat_cone_angle}")
+            self.__log.debug(f"self.__foci_cone_angle={self.__foci_cone_angle}")
+            self.__log.debug(f"self.__non_sidereal_cone_angle={self.__non_sidereal_cone_angle}")
+            self.__log.debug(f"self.__sidereal_cone_angle={self.__sidereal_cone_angle}")
 
     # +
     # method: refresh()

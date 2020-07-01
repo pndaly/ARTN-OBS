@@ -15,7 +15,7 @@ import astropy
 # doc string(s)
 # -
 __doc__ = """
-  % python3 -m pytest test_telescopes.py
+  % python3.7 -m pytest -p no:warnings test_telescopes.py
 """
 
 
