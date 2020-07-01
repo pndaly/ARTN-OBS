@@ -60,7 +60,7 @@ def test_obsreq_filters_2():
     """ test obsreq_filters() for incorrect input(s) """
     with ptr(Exception):
         obsreq_filters(query=connect_database()().query(ObsReq),
-                       request_args=random.choice([None, get_hash(), {}, [], ()]))
+                       request_args=random.choice([None, get_hash(), [], ()]))
 
 
 # noinspection PyUnresolvedReferences
@@ -91,7 +91,7 @@ def test_user_filters_2():
     """ test user_filters() for incorrect input(s) """
     with ptr(Exception):
         user_filters(query=connect_database()().query(User),
-                     request_args=random.choice([None, get_hash(), {}, [], ()]))
+                     request_args=random.choice([None, get_hash(), [], ()]))
 
 
 # noinspection PyUnresolvedReferences
