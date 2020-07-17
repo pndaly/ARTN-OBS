@@ -45,7 +45,7 @@ MIN__DECLINATION = -90.0
 MIN__LATITUDE = -90.0
 MIN__LONGITUDE = -360.0
 MIN__NDAYS = 1
-MIN__RIGHT__ASCENSION = 0.0
+MIN__RIGHT__ASCENSION = -360.0
 MOON__CIVIL = {0: 'new', 1: 'waxing crescent', 2: 'first quarter', 3: 'waxing gibbous',
                4: 'full', 5: 'waning gibbous', 6: 'last quarter', 7: 'waning crescent'}
 MOON__ILLUM = [0.0, 25.0, 50.0, 75.0, 100.0, 75.0, 50.0, 25.0]
@@ -94,6 +94,8 @@ class Telescope(object):
         self.__nautical_dusk = TEL__NAUTICAL__DUSK[self.__name]
         self.__slew_rate = TEL__SLEW__RATE[self.__name]
         self.__supported = TEL__SUPPORTED[self.__name]
+        self.__timezone = TEL__TIMEZONE[self.__name]
+        self.__utc_offset = TEL__UTC__OFFSET[self.__name]
 
         self.__observatory = EarthLocation(
             lat=self.__latitude * u.deg, lon=self.__longitude * u.deg, height=self.__altitude * u.m)
@@ -212,6 +214,14 @@ class Telescope(object):
     def supported(self):
         return self.__supported
 
+    @property
+    def timezone(self):
+        return self.__timezone
+
+    @property
+    def utc_offset(self):
+        return self.__utc_offset
+
     # +
     # method: __dump__()
     # -
@@ -249,17 +259,19 @@ class Telescope(object):
             _a_horizon = TEL__ASTRONOMICAL__DAWN[self.__name]*u.degree
             _c_horizon = TEL__CIVIL__DAWN[self.__name]*u.degree
             _n_horizon = TEL__NAUTICAL__DAWN[self.__name]*u.degree
+
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 _date = obs_time
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _date = Time(obs_time)
+
             if twilight == 'astronomical':
                 _jd = self.__observer.sun_rise_time(_date, which=which, horizon=_a_horizon).jd
             elif twilight == 'civil':
                 _jd = self.__observer.sun_rise_time(_date, which=which, horizon=_c_horizon).jd
             elif twilight == 'nautical':
                 _jd = self.__observer.sun_rise_time(_date, which=which, horizon=_n_horizon).jd
-            return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+            return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -282,17 +294,19 @@ class Telescope(object):
             _a_horizon = TEL__ASTRONOMICAL__DUSK[self.__name]*u.degree
             _c_horizon = TEL__CIVIL__DUSK[self.__name]*u.degree
             _n_horizon = TEL__NAUTICAL__DUSK[self.__name]*u.degree
+
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 _date = obs_time
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _date = Time(obs_time)
+
             if twilight == 'astronomical':
                 _jd = self.__observer.sun_set_time(_date, which=which, horizon=_a_horizon).jd
             elif twilight == 'civil':
                 _jd = self.__observer.sun_set_time(_date, which=which, horizon=_c_horizon).jd
             elif twilight == 'nautical':
                 _jd = self.__observer.sun_set_time(_date, which=which, horizon=_n_horizon).jd
-            return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+            return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -397,10 +411,10 @@ class Telescope(object):
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 _jd = self.__observer.noon(obs_time, which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _jd = self.__observer.noon(Time(obs_time), which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -420,14 +434,54 @@ class Telescope(object):
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 _jd = self.__observer.midnight(obs_time, which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _jd = self.__observer.midnight(Time(obs_time), which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
         return None
+
+    # +
+    # method: moon_altaz()
+    # -
+    def moon_altaz(self, obs_time=Time(get_isot(0, True)), ndays=MIN__NDAYS):
+        """ returns an array of (alt, az, distance) for moon over several days """
+
+        # check input(s)
+        ndays = ndays if (isinstance(ndays, int) and ndays > 0) else MIN__NDAYS
+
+        # execute
+        _time = None
+        try:
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                _time = obs_time.iso
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                _time = obs_time.replace('T', ' ')
+            if _time is not None:
+                _tarray = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+                return self.__observer.moon_altaz(_tarray)
+        except Exception:
+            if self.__log:
+                self.__log.error(f'unable to convert time')
+        return None
+
+    # +
+    # method: moon_altaz_now()
+    # -
+    def moon_altaz_now(self):
+        """ returns (alt, az, distance) for moon now """
+        _ret = self.moon_altaz(f'{get_isot(0, True)}', ndays=1)
+        if _ret is not None:
+            return _ret[0]
+
+    # +
+    # method: moon_altaz_today()
+    # -
+    def moon_altaz_today(self):
+        """ returns (alt, az, distance) for moon since midnight """
+        return self.moon_altaz(f"{get_isot(0, False).split('T')[0]}T00:00:00.000000", ndays=1)
 
     # +
     # method: moon_alt()
@@ -574,7 +628,7 @@ class Telescope(object):
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_full_moon(_date)))
             elif which == 'previous' and phase == 'last quarter':
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_last_quarter_moon(_date)))
-            return jd_to_isot(_ans) if utc else jd_to_isot(_ans - abs(OBS_UTC_OFFSET/24.0))
+            return jd_to_isot(_ans) if utc else jd_to_isot(_ans - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -596,6 +650,51 @@ class Telescope(object):
             if self.__log:
                 self.__log.error(f'unable to convert time')
         return math.nan
+
+    # +
+    # method: moon_exclusion()
+    # -
+    def moon_exclusion(self, obs_time=Time(get_isot(0, True)), ndays=MIN__NDAYS):
+        """ returns an array of moon exclusion angles from object for several days """
+
+        # check input(s)
+        ndays = ndays if (isinstance(ndays, int) and ndays > 0) else MIN__NDAYS
+
+        # execute
+        _time = None
+        _moon_lower = self.__min_moonex
+        _moon_upper = self.__max_moonex - _moon_lower
+        try:
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                _time = obs_time.iso
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                _time = obs_time.replace('T', ' ')
+            if _time is not None:
+                _tarray = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+                _illuminati = self.__observer.moon_illumination(_tarray)
+                _lunar_altaz = self.__observer.moon_altaz(_tarray)
+                _illuminati[_lunar_altaz.alt < 0.0] = 0.0
+                return _moon_lower + (_moon_upper * _illuminati)
+        except Exception:
+            if self.__log:
+                self.__log.error(f'unable to convert time')
+        return None
+
+    # +
+    # method: moon_exclusion_now()
+    # -
+    def moon_exclusion_now(self):
+        """ returns exclusion zone for moon now """
+        _ret = self.moon_exclusion(f'{get_isot(0, True)}', ndays=1)
+        if _ret is not None:
+            return _ret[0]
+
+    # +
+    # method: moon_exclusion_today()
+    # -
+    def moon_exclusion_today(self):
+        """ returns an array of moon exclusion angles for today """
+        return self.moon_exclusion(f"{get_isot(0, False).split('T')[0]}T00:00:00.000000", ndays=1)
 
     # +
     # method: moon_illumination()
@@ -669,6 +768,46 @@ class Telescope(object):
         return math.nan
 
     # +
+    # method: moon_radec()
+    # -
+    def moon_radec(self, obs_time=Time(get_isot(0, True)), ndays=MIN__NDAYS):
+        """ returns an array of (ra, dec, distance) for moon over several days """
+
+        # check input(s)
+        ndays = ndays if (isinstance(ndays, int) and ndays > 0) else MIN__NDAYS
+
+        # execute
+        _time = None
+        try:
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                _time = obs_time.iso
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                _time = obs_time.replace('T', ' ')
+            if _time is not None:
+                _tarray = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+                return get_moon(_tarray, location=self.__observatory)
+        except Exception:
+            if self.__log:
+                self.__log.error(f'unable to convert time')
+        return None
+
+    # +
+    # method: moon_radec_now()
+    # -
+    def moon_radec_now(self):
+        """ returns (ra, dec, distance) for moon now """
+        _ret = self.moon_radec(f'{get_isot(0, True)}', ndays=1)
+        if _ret is not None:
+            return _ret[0]
+
+    # +
+    # method: moon_radec_today()
+    # -
+    def moon_radec_today(self):
+        """ returns (ra, dec, distance) for moon since midnight """
+        return self.moon_radec(f"{get_isot(0, False).split('T')[0]}T00:00:00.000000", ndays=1)
+
+    # +
     # method: moon_rise()
     # -
     def moon_rise(self, obs_time=Time(get_isot(0, True)), which=AST__WHICH[-1], utc=False):
@@ -682,14 +821,84 @@ class Telescope(object):
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 _jd = self.__observer.moon_rise_time(obs_time, which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _jd = self.__observer.moon_rise_time(Time(obs_time), which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
         return None
+
+    # +
+    # method: moon_separation()
+    # -
+    def moon_separation(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='', ndays=MIN__NDAYS):
+        """ returns array of separation angles between moon and object """
+
+        # check input(s)
+        ndays = ndays if (isinstance(ndays, int) and ndays > 0) else MIN__NDAYS
+        _time, _tarray, _obs_coords, _ra, _dec = None, None, None, math.nan, math.nan
+
+        # get coordinates by name or Ra, Dec
+        if isinstance(obs_name, str) and obs_name.strip() != '':
+            try:
+                _obs_coords = FixedTarget.from_name(obs_name)
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert name')
+        elif isinstance(obs_coords, str) and obs_coords.strip() != '':
+            try:
+                _ra, _dec = obs_coords.split()
+                _ra = f'{_ra} hours' if 'hours' not in _ra.lower() else _ra
+                _dec = f'{_dec} degrees' if 'degrees' not in _dec.lower() else _dec
+                _obs_coords = SkyCoord(f"{_ra}", f"{_dec}")
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert coords')
+        if _obs_coords is None:
+            return None
+        else:
+            _ra, _dec = _obs_coords.ra.value, _obs_coords.dec.value
+
+        # convert time
+        try:
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                _time = obs_time.iso
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                _time = obs_time.replace('T', ' ')
+        except Exception:
+            if self.__log:
+                self.__log.error(f'unable to convert time')
+        if _time is None:
+            return None
+        else:
+            _tarray = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+
+        # execute
+        try:
+            _moon_coords = self.moon_radec(obs_time=obs_time, ndays=ndays)
+            _obj_radec = SkyCoord(ra=_ra * u.deg, dec=_dec * u.deg)
+            return _obj_radec.separation(_moon_coords).deg
+        except:
+            return None
+
+    # +
+    # method: moon_separation_now()
+    # -
+    def moon_separation_now(self, obs_name='', obs_coords=''):
+        """ returns (ra, dec, distance) for moon now """
+        _ret = self.moon_separation(f'{get_isot(0, True)}', obs_name=obs_name, obs_coords=obs_coords, ndays=1)
+        if _ret is not None:
+            return _ret[0]
+
+    # +
+    # method: moon_separation_today()
+    # -
+    def moon_separation_today(self, obs_name='', obs_coords=''):
+        """ returns (ra, dec, distance) for moon since midnight """
+        return self.moon_separation(f"{get_isot(0, False).split('T')[0]}T00:00:00.000000", obs_name=obs_name,
+                                    obs_coords=obs_coords, ndays=1)
 
     # +
     # method: moon_set()
@@ -705,10 +914,10 @@ class Telescope(object):
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 _jd = self.__observer.moon_set_time(obs_time, which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _jd = self.__observer.moon_set_time(Time(obs_time), which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -755,7 +964,7 @@ class Telescope(object):
                 _date = self.__observer.tonight(obs_time)
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _date = self.__observer.tonight(Time(obs_time))
-            return jd_to_isot(_date[1].jd if utc else (_date[1].jd - abs(OBS_UTC_OFFSET/24.0)))
+            return jd_to_isot(_date[1].jd if utc else (_date[1].jd - abs(self.__utc_offset/24.0)))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -777,7 +986,7 @@ class Telescope(object):
                 _date = self.__observer.tonight(obs_time)
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _date = self.__observer.tonight(Time(obs_time))
-            return jd_to_isot(_date[0].jd if utc else (_date[0].jd - abs(OBS_UTC_OFFSET/24.0)))
+            return jd_to_isot(_date[0].jd if utc else (_date[0].jd - abs(self.__utc_offset/24.0)))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -924,10 +1133,10 @@ class Telescope(object):
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 _jd = self.__observer.sun_rise_time(obs_time, which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _jd = self.__observer.sun_rise_time(Time(obs_time), which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -947,10 +1156,10 @@ class Telescope(object):
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 _jd = self.__observer.sun_set_time(obs_time, which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _jd = self.__observer.sun_set_time(Time(obs_time), which=which).jd
-                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(OBS_UTC_OFFSET/24.0))
+                return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
@@ -972,8 +1181,8 @@ class Telescope(object):
                 _date = self.__observer.tonight(obs_time)
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 _date = self.__observer.tonight(Time(obs_time))
-            _start = jd_to_isot(_date[0].jd if utc else (_date[0].jd - abs(OBS_UTC_OFFSET/24.0)))
-            _end = jd_to_isot(_date[1].jd if utc else (_date[1].jd - abs(OBS_UTC_OFFSET/24.0)))
+            _start = jd_to_isot(_date[0].jd if utc else (_date[0].jd - abs(self.__utc_offset/24.0)))
+            _end = jd_to_isot(_date[1].jd if utc else (_date[1].jd - abs(self.__utc_offset/24.0)))
             return _start, _end
         except:
             if self.__log:
@@ -985,19 +1194,16 @@ class Telescope(object):
     # -
     def zenith(self, obs_time=Time(get_isot(0, True))):
         """ returns RA, Dec of zenith """
-
-        # check input(s)
-        if not isinstance(obs_time, str) or (isinstance(obs_time, str) and re.match(OBS_ISO_PATTERN, obs_time) is None):
-            return None, None
-
         try:
-            return self.lst(obs_time=obs_time), dec_from_decimal(TEL__LATITUDE[self.__name])
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                return self.lst(obs_time=obs_time), dec_from_decimal(TEL__LATITUDE[self.__name])
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                return self.lst(obs_time=Time(obs_time)), dec_from_decimal(TEL__LATITUDE[self.__name])
         except:
             if self.__log:
                 self.__log.error(f'unable to convert time')
         return None, None
 
-    # +
     # +
     # method: airmass_plot()
     # -
@@ -1069,145 +1275,6 @@ class Telescope(object):
         return f'data:image/png;base64,{base64.b64encode(data).decode()}'
 
     # +
-    # method: moon_coordinates()
-    # -
-    def moon_coordinates(self, date=get_isot(0, True), ndays=MIN__NDAYS, from_now=False):
-        """ returns an array of (ra, dec, distance) for moon over several days """
-
-        # check input(s)
-        date = date if re.match(OBS_ISO_PATTERN, date) is not None else get_isot(0, True)
-        ndays = ndays if isinstance(ndays, int) else MIN__NDAYS
-        ndays = ndays if ndays > 0 else MIN__NDAYS
-        from_now = from_now if isinstance(from_now, bool) else False
-
-        # set default(s)
-        _time = Time(date) if from_now else Time(date.split()[0])
-        _time = Time(_time.iso)
-        _time = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
-
-        # noinspection PyBroadException
-        try:
-            return get_moon(_time, location=self.__observatory)
-        except Exception:
-            return None
-
-    # +
-    # method: moon_coordinates_now()
-    # -
-    def moon_coordinates_now(self):
-        """ returns (ra, dec, distance) for moon now """
-        return self.moon_coordinates(f'{get_isot(0, True)}', ndays=1, from_now=True)[0]
-
-    # +
-    # method: moon_coordinates_today()
-    # -
-    def moon_coordinates_today(self):
-        """ returns (ra, dec, distance) for moon now """
-        return self.moon_coordinates(f'{get_isot(0, True)}', ndays=1, from_now=False)
-
-    # +
-    # method: moon_exclusion()
-    # -
-    def moon_exclusion(self, date=get_isot(0, True), ndays=MIN__NDAYS, from_now=False):
-        """ returns an array of moon exclusion angles from object for several days """
-
-        # check input(s)
-        date = date if re.match(OBS_ISO_PATTERN, date) is not None else get_isot(0, True)
-        ndays = ndays if isinstance(ndays, int) else MIN__NDAYS
-        ndays = ndays if ndays > 0 else MIN__NDAYS
-        from_now = from_now if isinstance(from_now, bool) else False
-
-        # set default(s)
-        _excl = None
-        _time = Time(date) if from_now else Time(date.split()[0])
-        _time = Time(_time.iso)
-        _time = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
-
-        _moon_lower = TEL__MIN__MOONEX[f'{self.__name.lower()}']
-        _moon_upper = TEL__MAX__MOONEX[f'{self.__name.lower()}'] - _moon_lower
-
-        # get illumination and moon alt-az for time
-        _illuminati = self.__observer.moon_illumination(_time)
-        _lunar_altaz = self.__observer.moon_altaz(_time)
-
-        # noinspection PyBroadException
-        try:
-            for _i in range(len(_lunar_altaz)):
-                if _lunar_altaz[_i].alt <= 0:
-                    # noinspection PyUnresolvedReferences
-                    _illuminati[_i] = 0.0
-            _excl = (_moon_lower + _moon_upper * _illuminati)
-        except Exception:
-            _excl = ndays * np.linspace(math.nan, math.nan, AST__5__MINUTES*ndays)
-
-        # return result
-        return _excl
-
-    # +
-    # method: moon_exclusion_now()
-    # -
-    def moon_exclusion_now(self):
-        """ returns the value of the moon exclusion angle from object right now """
-        return self.moon_exclusion(f'{get_isot(0, True)}', ndays=1, from_now=True)[0]
-
-    # +
-    # method: moon_exclusion_today()
-    # -
-    def moon_exclusion_today(self):
-        """ returns an array of moon exclusion angles from object for today """
-        return self.moon_exclusion(f'{get_isot(0, True)}', ndays=1, from_now=False)
-
-    # +
-    # method: moon_separation()
-    # -
-    def moon_separation(self, ra=MIN__RIGHT__ASCENSION, dec=MIN__DECLINATION, date=get_isot(0, True),
-                        ndays=MIN__NDAYS, from_now=False):
-        """ returns an array of moon separation angles from object for several days """
-
-        # check input(s)
-        ra = ra if isinstance(ra, float) else MIN__RIGHT__ASCENSION
-        ra = ra if ra > MIN__RIGHT__ASCENSION else MIN__RIGHT__ASCENSION
-        ra = ra if ra < MAX__RIGHT__ASCENSION else MAX__RIGHT__ASCENSION
-        dec = dec if isinstance(dec, float) else MIN__DECLINATION
-        dec = dec if dec > MIN__DECLINATION else MIN__DECLINATION
-        dec = dec if dec < MAX__DECLINATION else MAX__DECLINATION
-        date = date if re.match(OBS_ISO_PATTERN, date) is not None else get_isot(0, True)
-        ndays = ndays if isinstance(ndays, int) else MIN__NDAYS
-        ndays = ndays if ndays > 0 else MIN__NDAYS
-        from_now = from_now if isinstance(from_now, bool) else False
-
-        # set default(s)
-        _sep = None
-        _time = Time(date) if from_now else Time(date.split()[0])
-        _time = Time(_time.iso)
-        _time = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
-
-        # noinspection PyBroadException
-        try:
-            _moon_coord = get_moon(_time, location=self.__observatory)
-            _obj_radec = SkyCoord(ra=ra * u.deg, dec=dec * u.deg)
-            _sep = _obj_radec.separation(_moon_coord).deg
-        except Exception:
-            _sep = ndays * np.linspace(math.nan, math.nan, AST__5__MINUTES*ndays)
-
-        # return array
-        return _sep
-
-    # +
-    # method: moon_separation_now()
-    # -
-    def moon_separation_now(self, ra=MIN__RIGHT__ASCENSION, dec=MIN__DECLINATION):
-        """ returns the value of the moon separation angle from object right now """
-        return self.moon_separation(ra, dec, f'{get_isot(0, True)}', ndays=1, from_now=True)[0]
-
-    # +
-    # method: moon_separation_today()
-    # -
-    def moon_separation_today(self, ra=MIN__RIGHT__ASCENSION, dec=MIN__DECLINATION):
-        """ returns an array of moon separation angles from object for today """
-        return self.moon_separation(ra, dec, f'{get_isot(0, True)}', ndays=1, from_now=False)
-
-    # +
     # (override) method: observe()
     # -
     def observe(self, **kwargs):
@@ -1240,8 +1307,8 @@ class Telescope(object):
         _time = Time(_time.iso)
 
         # get arrays for moon exclusion, separation and UTC time
-        _mex = self.moon_exclusion(date=_time.iso, ndays=ndays, from_now=from_now)
-        _msp = self.moon_separation(ra=ra, dec=dec, date=_time.iso, ndays=ndays, from_now=from_now)
+        _mex = self.moon_exclusion(date=_time.iso, ndays=ndays)
+        _msp = self.moon_separation(ra=ra, dec=dec, date=_time.iso, ndays=ndays)
         _time = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
 
         # modify to reference frame and get solar position

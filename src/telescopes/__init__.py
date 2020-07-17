@@ -4,7 +4,9 @@
 # +
 # import(s)
 # -
+from datetime import datetime
 import itertools
+import pytz
 
 
 # +
@@ -36,7 +38,9 @@ TEL__NODES = {
         'name': 'bok',
         'mount': 'Equatorial',
         'telescope_slew_rate': 0.5,
-        'instruments': ['90Prime', 'BCSpec']
+        'instruments': ['90Prime', 'BCSpec'],
+        'timezone': pytz.timezone('America/Phoenix'),
+        'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
     },
     'Kuiper': {
         'aka': 'Kuiper 61-inch',
@@ -63,7 +67,9 @@ TEL__NODES = {
         'name': 'kuiper',
         'mount': 'Equatorial',
         'telescope_slew_rate': 0.6,
-        'instruments': ['Mont4k']
+        'instruments': ['Mont4k'],
+        'timezone': pytz.timezone('America/Phoenix'),
+        'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
     },
     'MMT': {
         'aka': 'MMT 6.5m',
@@ -90,7 +96,9 @@ TEL__NODES = {
         'name': 'mmt',
         'mount': 'Alt-Az',
         'telescope_slew_rate': 0.7,
-        'instruments': ['BinoSpec']
+        'instruments': ['BinoSpec'],
+        'timezone': pytz.timezone('America/Phoenix'),
+        'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
     },
     'Vatt': {
         'aka': 'Vatt 1.8-metre',
@@ -117,7 +125,38 @@ TEL__NODES = {
         'name': 'vatt',
         'mount': 'Alt-Az',
         'telescope_slew_rate': 0.8,
-        'instruments': ['Vatt4k']
+        'instruments': ['Vatt4k'],
+        'timezone': pytz.timezone('America/Phoenix'),
+        'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
+    },
+    'Steward': {
+        'aka': 'Raymond White 21-inch',
+        'altitude': 0.0 / 3.28083,
+        'civil_dawn': -6.0,
+        'nautical_dawn': -12.0,
+        'astronomical_dawn': -18.0,
+        'civil_dusk': -6.0,
+        'nautical_dusk': -12.0,
+        'astronomical_dusk': -18.0,
+        'declination_limit': 60.0,
+        'dome_slew_rate': 1.3,
+        'elevation': 0.0,
+        'focal_length_m': 1.0,
+        'focal_length_ft': 1.0 * 3.28083,
+        'latitude': 32.233184,
+        'longitude': -110.948944,
+        'max_airmass': 3.5,
+        'max_moon_exclusion': 25.0,
+        'primary_imperial': 21.0,
+        'primary_metric': 0.5334,
+        'min_airmass': 1.0,
+        'min_moon_exclusion': 2.5,
+        'name': 'steward',
+        'mount': 'Alt-Az',
+        'telescope_slew_rate': 0.8,
+        'instruments': [],
+        'timezone': pytz.timezone('America/Phoenix'),
+        'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
     }
 }
 
@@ -149,6 +188,8 @@ TEL__NAUTICAL__DAWN = \
 TEL__NAUTICAL__DUSK = \
     {_k: _v['nautical_dusk'] for _k, _v in TEL__NODES.items() if 'nautical_dusk' in _v}
 TEL__SLEW__RATE = {_k: _v['telescope_slew_rate'] for _k, _v in TEL__NODES.items() if 'telescope_slew_rate' in _v}
+TEL__TIMEZONE = {_k: _v['timezone'] for _k, _v in TEL__NODES.items() if 'timezone' in _v}
+TEL__UTC__OFFSET = {_k: _v['utc_offset'] for _k, _v in TEL__NODES.items() if 'utc_offset' in _v}
 
 
 # +

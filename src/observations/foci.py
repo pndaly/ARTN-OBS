@@ -167,7 +167,7 @@ class Foci(ObsParams):
         # calculate some value(s)
         self.__zenith_ra, self.__zenith_dec = self.__telescope.zenith(self.__begin)
         self.__zenith_ra_deg, self.__zenith_dec_deg = ra_to_decimal(self.__zenith_ra), dec_to_decimal(self.__zenith_dec)
-        self.__foci_utc_jd = self.__begin_jd + abs(OBS_UTC_OFFSET/24.0)
+        self.__foci_utc_jd = self.__begin_jd + abs(self.__telescope.utc_offset/24.0)
         self.__foci_utc = jd_to_isot(self.__foci_utc_jd)
         self.__mjd_start = self.__begin_jd - OBS_MJD_OFFSET
         self.__mjd_end = self.__end_jd - OBS_MJD_OFFSET

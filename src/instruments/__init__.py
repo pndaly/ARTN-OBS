@@ -37,7 +37,7 @@ INS__NODES = {
     },
     'BinoSpec': {
         'binning': 'None, 1x1, 2x2, 3x3, 4x4',
-        'filters': 'U, B, V, R, I, Clear',
+        'filters': 'g, r, i, z, Clear',
         'flat_exposure_times': {'U': 30.0, 'B': 29.0, 'V': 28.0, 'R': 27.0, 'I': 26.0, 'Clear': 25.0},
         'readout': 15.0,
         'readout_times': {'None': 15.0, '2x2': 7.5, '3x3': 5.0, '4x4': 3.75},
