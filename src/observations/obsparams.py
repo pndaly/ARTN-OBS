@@ -59,7 +59,7 @@ class ObsParams(object):
         self.instrument = instrument
         self.log = log
 
-        # other getter/setter variable(s)
+        # other variable(s)
         self.__time_for_darks = OBSPARAM_TIME_FOR_DARKS
         self.__time_for_flats = OBSPARAM_TIME_FOR_FLATS
         self.__time_for_foci = OBSPARAM_TIME_FOR_FOCI
@@ -183,7 +183,7 @@ class ObsParams(object):
             self.__log = None
 
     # +
-    # other getter(s) / setter(s)
+    # Decorator(s) for getter(s) / setter(s)
     # -
     @property
     def dark_cone_angle(self):
@@ -389,7 +389,7 @@ class ObsParams(object):
             (isinstance(time_for_sidereal, float) and (0.0 < time_for_sidereal < 1.0)) else OBSPARAM_TIME_FOR_SIDEREAL
 
     # +
-    # getter(s)
+    # getter(s) without setter(s)
     # -
     @property
     def dawn_astronomical(self):

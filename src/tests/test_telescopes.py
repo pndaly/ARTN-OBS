@@ -1100,7 +1100,7 @@ def test_telescope_167():
 
 def test_telescope_168():
     """ test Telescope().moon_separation_now() for correct input(s) """
-    _val =  _tel.moon_separation_now(obs_name='M51')
+    _val = _tel.moon_separation_now(obs_name='M51')
     assert (isinstance(_val, float) and _val >= 0.0) in OBS_TRUE_VALUES
 
 
@@ -1131,3 +1131,213 @@ def test_telescope_172():
 def test_telescope_173():
     """ test Telescope().moon_separation_today() for correct input(s) """
     assert isinstance(_tel.moon_separation_today(obs_coords='13:30:00 47:11:00'), np.ndarray) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().sun_radec()
+# -
+def test_telescope_174():
+    """ test Telescope.sun_radec() for incorrect input(s) """
+    assert all(_tel.sun_radec(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+# noinspection PyUnresolvedReferences
+def test_telescope_175():
+    """ test Telescope().sun_radec() for correct input(s) """
+    _val = _tel.sun_radec(get_isot(random.randint(-1000, 1000), False))
+    assert isinstance(_val, astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().sun_radec_today()
+# -
+# noinspection PyUnresolvedReferences
+def test_telescope_176():
+    """ test Telescope().sun_radec_today() for correct input(s) """
+    assert isinstance(_tel.sun_radec_today(), astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().sun_radec_now()
+# -
+def test_telescope_177():
+    """ test Telescope().sun_radec_now() for correct input(s) """
+    _val = _tel.sun_radec_now()
+    assert all(isinstance(_k, float) in OBS_TRUE_VALUES for _k in [_val.ra.value, _val.dec.value, _val.distance.value])
+
+
+def test_telescope_178():
+    """ test Telescope().sun_radec_now() for correct input(s) """
+    _val = _tel.sun_radec_now()
+    assert (-360.0 <= _val.ra.value <= 360.0) in OBS_TRUE_VALUES
+
+
+def test_telescope_179():
+    """ test Telescope().sun_radec_now() for correct input(s) """
+    _val = _tel.sun_radec_now()
+    assert (-90.0 <= _val.dec.value <= 90.0) in OBS_TRUE_VALUES
+
+
+def test_telescope_180():
+    """ test Telescope().sun_radec_now() for correct input(s) """
+    _val = _tel.sun_radec_now()
+    assert (_val.distance.value > 0.0) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().sun_radec_now() vs. Telescope().sun_coord()
+# -
+def test_telescope_181():
+    """ test comparison of results from Telescope.sun_radec_now() vs. Telescope.sun_coord() """
+    # get alt, az from moon_coordinates_now
+    _now = _tel.sun_radec_now()
+    _ra, _dec = ra_from_decimal(_now.ra.value), dec_from_decimal(_now.dec.value)
+    _y = _tel.radec_to_altaz(obs_coords=f'{_ra} {_dec}')
+    _alt_1, _az_1 = _y.alt.value, _y.az.value
+    # get alt, az from moon_coord
+    _sun = _tel.sun_coord()
+    _alt_2, _az_2 = _sun.alt.value, _sun.az.value
+    assert math.isclose(_alt_1, _alt_2, rel_tol=0.1) and math.isclose(_az_1, _az_2, rel_tol=0.1)
+
+
+# +
+# test: Telescope().sun_altaz()
+# -
+def test_telescope_182():
+    """ test Telescope.sun_altaz() for incorrect input(s) """
+    assert all(_tel.sun_altaz(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+# noinspection PyUnresolvedReferences
+def test_telescope_183():
+    """ test Telescope().sun_altaz() for correct input(s) """
+    _val = _tel.sun_altaz(get_isot(random.randint(-1000, 1000), False))
+    assert isinstance(_val, astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().sun_altaz_today()
+# -
+# noinspection PyUnresolvedReferences
+def test_telescope_184():
+    """ test Telescope().sun_altaz_today() for correct input(s) """
+    assert isinstance(_tel.sun_altaz_today(), astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().sun_altaz_now()
+# -
+def test_telescope_185():
+    """ test Telescope().sun_altaz_now() for correct input(s) """
+    _val = _tel.sun_altaz_now()
+    assert all(isinstance(_k, float) in OBS_TRUE_VALUES for _k in [_val.alt.value, _val.az.value, _val.distance.value])
+
+
+def test_telescope_186():
+    """ test Telescope().sun_altaz_now() for correct input(s) """
+    _val = _tel.sun_altaz_now()
+    assert (-360.0 <= _val.az.value <= 360.0) in OBS_TRUE_VALUES
+
+
+def test_telescope_187():
+    """ test Telescope().sun_altaz_now() for correct input(s) """
+    _val = _tel.sun_altaz_now()
+    assert (0.0 <= _val.alt.value <= 90.0) in OBS_TRUE_VALUES
+
+
+def test_telescope_188():
+    """ test Telescope().sun_altaz_now() for correct input(s) """
+    _val = _tel.sun_altaz_now()
+    assert (_val.distance.value > 0.0) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().sun_radec_now() vs. Telescope().sun_altaz_now()
+# -
+def test_telescope_189():
+    """ test comparison of results from Telescope.sun_radec_now() vs. Telescope.sun_altaz_now() """
+    # get alt, az from moon_coordinates_now
+    _now = _tel.sun_radec_now()
+    _ra, _dec = ra_from_decimal(_now.ra.value), dec_from_decimal(_now.dec.value)
+    _y = _tel.radec_to_altaz(obs_coords=f'{_ra} {_dec}')
+    _alt_1, _az_1 = _y.alt.value, _y.az.value
+    # get alt, az from sun_coord
+    _sun = _tel.sun_altaz_now()
+    _alt_2, _az_2 = _sun.alt.value, _sun.az.value
+    assert math.isclose(_alt_1, _alt_2, rel_tol=0.1) and math.isclose(_az_1, _az_2, rel_tol=0.1)
+
+
+# +
+# test: Telescope.sun_separation()
+# -
+def test_telescope_190():
+    """ test Telescope().sun_separation() for incorrect input(s) """
+    assert all(_tel.sun_separation(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+def test_telescope_191():
+    """ test Telescope().sun_separation() for incorrect input(s) """
+    assert all(_tel.sun_separation(obs_name=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+def test_telescope_192():
+    """ test Telescope().sun_separation() for incorrect input(s) """
+    assert all(_tel.sun_separation(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+def test_telescope_193():
+    """ test Telescope().sun_separation() for correct input(s) """
+    assert isinstance(_tel.sun_separation(obs_name='M51'), np.ndarray) in OBS_TRUE_VALUES
+
+
+def test_telescope_194():
+    """ test Telescope().sun_separation() for correct input(s) """
+    assert isinstance(_tel.sun_separation(obs_coords='13:30:00 47:11:00'), np.ndarray) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope.sun_separation_now()
+# -
+def test_telescope_195():
+    """ test Telescope().sun_separation_now() for incorrect input(s) """
+    assert all(_tel.sun_separation_now(obs_name=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+def test_telescope_196():
+    """ test Telescope().sun_separation_now() for incorrect input(s) """
+    assert all(_tel.sun_separation_now(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+def test_telescope_197():
+    """ test Telescope().sun_separation_now() for correct input(s) """
+    _val = _tel.sun_separation_now(obs_name='M51')
+    assert (isinstance(_val, float) and _val >= 0.0) in OBS_TRUE_VALUES
+
+
+def test_telescope_198():
+    """ test Telescope().sun_separation_now() for correct input(s) """
+    _val = _tel.sun_separation_now(obs_coords='13:30:00 47:11:00')
+    assert (isinstance(_val, float) and _val >= 0.0) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope.sun_separation_today()
+# -
+def test_telescope_199():
+    """ test Telescope().sun_separation_today() for incorrect input(s) """
+    assert all(_tel.sun_separation_today(obs_name=_k) is None for _k in [get_hash(), {}, [], ()]) in OBS_TRUE_VALUES
+
+
+def test_telescope_200():
+    """ test Telescope().sun_separation_today() for incorrect input(s) """
+    assert all(_tel.sun_separation_today(obs_coords=_k) is None for _k in [get_hash(), {}, [], ()]) in OBS_TRUE_VALUES
+
+
+def test_telescope_201():
+    """ test Telescope().sun_separation_today() for correct input(s) """
+    assert isinstance(_tel.sun_separation_today(obs_name='M51'), np.ndarray) in OBS_TRUE_VALUES
+
+
+def test_telescope_202():
+    """ test Telescope().sun_separation_today() for correct input(s) """
+    assert isinstance(_tel.sun_separation_today(obs_coords='13:30:00 47:11:00'), np.ndarray) in OBS_TRUE_VALUES

@@ -115,8 +115,8 @@ test_sidereal.py ......... [100%]
 
 platform darwin -- Python 3.7.0, pytest-5.4.3, py-1.7.0, pluggy-0.13.1
 rootdir: /Users/pnd/PycharmProjects/ARTN-OBS/src/tests
-collected 139 items                                                                                                                                           
+collected 202 items                                                                                                                                           
 
 test_telescopes.py ......... [100%]
-=============== 139 passed in 20.67s ===============
+=============== 202 passed in 55.67s ===============
 ```

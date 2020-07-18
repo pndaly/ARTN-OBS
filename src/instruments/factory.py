@@ -67,7 +67,7 @@ class Instrument(object):
         self.__log = log if isinstance(log, logging.Logger) else None
 
     # + 
-    # getters without setters
+    # getter(s) without setter(s)
     # -
     @property
     def binning(self):

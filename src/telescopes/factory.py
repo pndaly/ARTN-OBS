@@ -132,7 +132,7 @@ class Telescope(object):
         self.__log = log if isinstance(log, logging.Logger) else None
 
     # +
-    # getter(s) with no setter(s)
+    # getter(s) without setter(s)
     # -
     @property
     def observer(self):
@@ -949,6 +949,13 @@ class Telescope(object):
         return None, None
 
     # +
+    # (override) method: observe()
+    # -
+    def observe(self, **kwargs):
+        if self.__log:
+            self.__log.debug(f'called self.observe, kwargs={kwargs}')
+
+    # +
     # method: observing_end()
     # -
     def observing_end(self, obs_time=Time(get_isot(0, True)), utc=False):
@@ -1069,6 +1076,46 @@ class Telescope(object):
         return None
 
     # +
+    # method: sun_altaz()
+    # -
+    def sun_altaz(self, obs_time=Time(get_isot(0, True)), ndays=MIN__NDAYS):
+        """ returns an array of (alt, az, distance) for sun over several days """
+
+        # check input(s)
+        ndays = ndays if (isinstance(ndays, int) and ndays > 0) else MIN__NDAYS
+
+        # execute
+        _time = None
+        try:
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                _time = obs_time.iso
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                _time = obs_time.replace('T', ' ')
+            if _time is not None:
+                _tarray = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+                return self.__observer.sun_altaz(_tarray)
+        except Exception:
+            if self.__log:
+                self.__log.error(f'unable to convert time')
+        return None
+
+    # +
+    # method: sun_altaz_now()
+    # -
+    def sun_altaz_now(self):
+        """ returns (alt, az, distance) for sun now """
+        _ret = self.sun_altaz(f'{get_isot(0, True)}', ndays=1)
+        if _ret is not None:
+            return _ret[0]
+
+    # +
+    # method: sun_altaz_today()
+    # -
+    def sun_altaz_today(self):
+        """ returns (alt, az, distance) for sun since midnight """
+        return self.sun_altaz(f"{get_isot(0, False).split('T')[0]}T00:00:00.000000", ndays=1)
+
+    # +
     # method: sun_alt()
     # -
     def sun_alt(self, obs_time=Time(get_isot(0, True))):
@@ -1120,6 +1167,45 @@ class Telescope(object):
         return None
 
     # +
+    # method: sun_radec()
+    # -
+    def sun_radec(self, obs_time=Time(get_isot(0, True)), ndays=MIN__NDAYS):
+        """ returns an array of (ra, dec, distance) for sun over several days """
+
+        # check input(s)
+        ndays = ndays if (isinstance(ndays, int) and ndays > 0) else MIN__NDAY
+        # execute
+        _time = None
+        try:
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                _time = obs_time.iso
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                _time = obs_time.replace('T', ' ')
+            if _time is not None:
+                _tarray = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+                return get_sun(_tarray)
+        except Exception:
+            if self.__log:
+                self.__log.error(f'unable to convert time')
+        return None
+
+    # +
+    # method: sun_radec_now()
+    # -
+    def sun_radec_now(self):
+        """ returns (ra, dec, distance) for sun now """
+        _ret = self.sun_radec(f'{get_isot(0, True)}', ndays=1)
+        if _ret is not None:
+            return _ret[0]
+
+    # +
+    # method: sun_radec_today()
+    # -
+    def sun_radec_today(self):
+        """ returns (ra, dec, distance) for sun since midnight """
+        return self.sun_radec(f"{get_isot(0, False).split('T')[0]}T00:00:00.000000", ndays=1)
+
+    # +
     # method: sun_rise()
     # -
     def sun_rise(self, obs_time=Time(get_isot(0, True)), which=AST__WHICH[-1], utc=False):
@@ -1141,6 +1227,76 @@ class Telescope(object):
             if self.__log:
                 self.__log.error(f'unable to convert time')
         return None
+
+    # +
+    # method: sun_separation()
+    # -
+    def sun_separation(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='', ndays=MIN__NDAYS):
+        """ returns array of separation angles between sun and object """
+
+        # check input(s)
+        ndays = ndays if (isinstance(ndays, int) and ndays > 0) else MIN__NDAYS
+        _time, _tarray, _obs_coords, _ra, _dec = None, None, None, math.nan, math.nan
+
+        # get coordinates by name or Ra, Dec
+        if isinstance(obs_name, str) and obs_name.strip() != '':
+            try:
+                _obs_coords = FixedTarget.from_name(obs_name)
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert name')
+        elif isinstance(obs_coords, str) and obs_coords.strip() != '':
+            try:
+                _ra, _dec = obs_coords.split()
+                _ra = f'{_ra} hours' if 'hours' not in _ra.lower() else _ra
+                _dec = f'{_dec} degrees' if 'degrees' not in _dec.lower() else _dec
+                _obs_coords = SkyCoord(f"{_ra}", f"{_dec}")
+            except:
+                if self.__log:
+                    self.__log.error(f'unable to convert coords')
+        if _obs_coords is None:
+            return None
+        else:
+            _ra, _dec = _obs_coords.ra.value, _obs_coords.dec.value
+
+        # convert time
+        try:
+            if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
+                _time = obs_time.iso
+            elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
+                _time = obs_time.replace('T', ' ')
+        except Exception:
+            if self.__log:
+                self.__log.error(f'unable to convert time')
+        if _time is None:
+            return None
+        else:
+            _tarray = Time(_time) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+
+        # execute
+        try:
+            _sun_coords = self.sun_radec(obs_time=obs_time, ndays=ndays)
+            _obj_radec = SkyCoord(ra=_ra * u.deg, dec=_dec * u.deg)
+            return _obj_radec.separation(_sun_coords).deg
+        except:
+            return None
+
+    # +
+    # method: sun_separation_now()
+    # -
+    def sun_separation_now(self, obs_name='', obs_coords=''):
+        """ returns (ra, dec, distance) for sun now """
+        _ret = self.sun_separation(f'{get_isot(0, True)}', obs_name=obs_name, obs_coords=obs_coords, ndays=1)
+        if _ret is not None:
+            return _ret[0]
+
+    # +
+    # method: sun_separation_today()
+    # -
+    def sun_separation_today(self, obs_name='', obs_coords=''):
+        """ returns (ra, dec, distance) for sun since midnight """
+        return self.sun_separation(f"{get_isot(0, False).split('T')[0]}T00:00:00.000000", obs_name=obs_name,
+                                   obs_coords=obs_coords, ndays=1)
 
     # +
     # method: sun_set()
@@ -1273,14 +1429,6 @@ class Telescope(object):
         # data = buf.getvalue()
         data = self.__name
         return f'data:image/png;base64,{base64.b64encode(data).decode()}'
-
-    # +
-    # (override) method: observe()
-    # -
-    def observe(self, **kwargs):
-        if not self.__simulation:
-            if self.__log:
-                self.__log.debug(f'called self.__observer(), kwargs={kwargs}')
 
     # +
     # method: observable()

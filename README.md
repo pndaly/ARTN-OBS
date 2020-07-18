@@ -87,7 +87,7 @@ NB: the last line of this file performs an IERS update every time it is invoked.
 
     ```bash
       % cd ${OBS_TESTS}
-      % python3.7 -m pytest artn_test.py
+      % bash README.sh
     ```
 
 ## IERS Updates
