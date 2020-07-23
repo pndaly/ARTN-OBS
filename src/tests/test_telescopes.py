@@ -165,17 +165,17 @@ def test_telescope_20():
 # -
 def test_telescope_21():
     """ test Telescope.is_observable() for incorrect input(s) """
-    assert all(_tel.is_observable(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.is_observable(obs_time=_k) is False for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_22():
     """ test Telescope.is_observable() for incorrect input(s) """
-    assert all(_tel.is_observable(obs_name=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.is_observable(obs_name=_k) is False for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_23():
     """ test Telescope.is_observable() for incorrect input(s) """
-    assert all(_tel.is_observable(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.is_observable(obs_coords=_k) is False for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_24():
@@ -302,7 +302,7 @@ def test_telescope_43():
 
 def test_telescope_44():
     """ test Telescope().moon_civil() for correct input(s) """
-    assert _tel.moon_civil(obs_time=get_isot(random.randint(-1000, 1000), True)) in MOON__CIVIL.values()
+    assert _tel.moon_civil(obs_time=get_isot(random.randint(-1000, 1000), True)) in AST__MOON__CIVIL.values()
 
 
 def test_telescope_45():
@@ -315,52 +315,52 @@ def test_telescope_45():
 
 
 # +
-# test: Telescope().moon_coord()
+# test: Telescope().moon_altaz()
 # -
 def test_telescope_46():
-    """ test Telescope.moon_coord() for incorrect input(s) """
-    assert all(_tel.moon_coord(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    """ test Telescope.moon_altaz() for incorrect input(s) """
+    assert all(_tel.moon_altaz(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 # noinspection PyUnresolvedReferences
 def test_telescope_47():
-    """ test Telescope().moon_coord() for correct input(s) """
-    assert isinstance(_tel.moon_coord(), astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
+    """ test Telescope().moon_altaz() for correct input(s) """
+    assert isinstance(_tel.moon_altaz(), astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
 
 
 def test_telescope_48():
-    """ test Telescope().moon_coord() for correct input(s) """
-    assert isinstance(_tel.moon_coord(
+    """ test Telescope().moon_altaz() for correct input(s) """
+    assert isinstance(_tel.moon_altaz(
         get_isot(random.randint(-1000, 1000), False)).alt.value, float) in OBS_TRUE_VALUES
 
 
 def test_telescope_49():
-    """ test Telescope().moon_coord() for correct input(s) """
-    assert (-90.0 <= _tel.moon_coord(
+    """ test Telescope().moon_altaz() for correct input(s) """
+    assert (-90.0 <= _tel.moon_altaz(
         get_isot(random.randint(-1000, 1000), False)).alt.value <= 90.0) in OBS_TRUE_VALUES
 
 
 def test_telescope_50():
-    """ test Telescope().moon_coord() for correct input(s) """
-    assert isinstance(_tel.moon_coord(
+    """ test Telescope().moon_altaz() for correct input(s) """
+    assert isinstance(_tel.moon_altaz(
         get_isot(random.randint(-1000, 1000), True)).az.value, float) in OBS_TRUE_VALUES
 
 
 def test_telescope_51():
-    """ test Telescope().moon_coord() for correct input(s) """
-    assert (-360.0 <= _tel.moon_coord(
+    """ test Telescope().moon_altaz() for correct input(s) """
+    assert (-360.0 <= _tel.moon_altaz(
         get_isot(random.randint(-1000, 1000), False)).az.value <= 360.0) in OBS_TRUE_VALUES
 
 
 def test_telescope_52():
-    """ test Telescope().moon_coord() for correct input(s) """
-    assert isinstance(_tel.moon_coord(
+    """ test Telescope().moon_altaz() for correct input(s) """
+    assert isinstance(_tel.moon_altaz(
         get_isot(random.randint(-1000, 1000), False)).distance.value, float) in OBS_TRUE_VALUES
 
 
 def test_telescope_53():
-    """ test Telescope().moon_coord() for correct input(s) """
-    assert (_tel.moon_coord(get_isot(random.randint(-1000, 1000), False)).distance.value > 0.0) in OBS_TRUE_VALUES
+    """ test Telescope().moon_altaz() for correct input(s) """
+    assert (_tel.moon_altaz(get_isot(random.randint(-1000, 1000), False)).distance.value > 0.0) in OBS_TRUE_VALUES
 
 
 # +
@@ -385,7 +385,7 @@ def test_telescope_56():
 def test_telescope_57():
     """ test Telescope.moon_date() for correct random input(s) """
     assert re.match(OBS_ISO_PATTERN, _tel.moon_date(
-        obs_time=get_isot(random.randint(-1000, 1000), True), phase=random.choice(AST__PHASE))) is not None
+        obs_time=get_isot(random.randint(-1000, 1000), True), phase=random.choice(AST__MOON__WHICH))) is not None
 
 
 # +
@@ -429,42 +429,42 @@ def test_telescope_63():
 # -
 def test_telescope_64():
     """ test Telescope.moon_is_up() for incorrect input(s) """
-    assert all(_tel.moon_is_up(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.moon_is_up(obs_time=_k) is False for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_65():
     """ test Telescope.moon_is_up() for incorrect input(s) """
-    assert all(_tel.moon_is_up(horizon=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.moon_is_up(horizon=_k) is False for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_66():
     """ test Telescope.moon_is_up() for correct random input(s) """
     _val = _tel.moon_is_up(get_isot(random.randint(-1000, 1000), False))
-    assert _val in [OBS_TRUE_VALUES, OBS_FALSE_VALUES, None]
+    assert _val in OBS_TRUE_VALUES or _val in OBS_FALSE_VALUES
 
 
 def test_telescope_67():
     """ test Telescope.moon_is_up() for correct random input(s) """
     _val = _tel.moon_is_up(get_isot(random.randint(-1000, 1000), True))
-    assert _val in [OBS_TRUE_VALUES, OBS_FALSE_VALUES, None]
+    assert _val in OBS_TRUE_VALUES or _val in OBS_FALSE_VALUES
 
 
 # +
-# test: Telescope().moon_lunation()
+# test: Telescope().lunation()
 # -
 def test_telescope_68():
-    """ test Telescope.moon_lunation() for incorrect input(s) """
-    assert all(_tel.moon_lunation(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    """ test Telescope.lunation() for incorrect input(s) """
+    assert all(_tel.lunation(obs_time=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_69():
-    """ test Telescope().moon_lunation() for correct input(s) """
-    assert isinstance(_tel.moon_lunation(get_isot(random.randint(-1000, 1000), True)), float) in OBS_TRUE_VALUES
+    """ test Telescope().lunation() for correct input(s) """
+    assert isinstance(_tel.lunation(get_isot(random.randint(-1000, 1000), True)), float) in OBS_TRUE_VALUES
 
 
 def test_telescope_70():
-    """ test Telescope().moon_lunation() for correct input(s) """
-    assert (0.0 <= _tel.moon_lunation(get_isot(random.randint(-1000, 1000), False)) <= 30.0) in OBS_TRUE_VALUES
+    """ test Telescope().lunation() for correct input(s) """
+    assert (0.0 <= _tel.lunation(get_isot(random.randint(-1000, 1000), False)) <= 30.0) in OBS_TRUE_VALUES
 
 
 # +
@@ -580,7 +580,8 @@ def test_telescope_88():
 # -
 def test_telescope_89():
     """ test Telescope.observing_end() for incorrect input(s) """
-    assert all(_tel.observing_end(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(re.match(OBS_ISO_PATTERN, _tel.observing_end(utc=_k)) is not None for _k in INVALID_INPUTS) \
+           in OBS_TRUE_VALUES
 
 
 def test_telescope_90():
@@ -594,8 +595,8 @@ def test_telescope_90():
 # -
 def test_telescope_91():
     """ test Telescope.observing_start() for incorrect input(s) """
-    assert all(_tel.observing_start(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
-
+    assert all(re.match(OBS_ISO_PATTERN, _tel.observing_start(utc=_k)) is not None for _k in INVALID_INPUTS) \
+           in OBS_TRUE_VALUES
 
 def test_telescope_92():
     """ test Telescope.observing_start() for correct input(s) """
@@ -618,7 +619,7 @@ def test_telescope_94():
 
 def test_telescope_95():
     """ test Telescope.radec_to_altaz() for incorrect input(s) """
-    assert all(_tel.is_observable(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.radec_to_altaz(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 # noinspection PyUnresolvedReferences
@@ -706,52 +707,52 @@ def test_telescope_109():
 
 
 # +
-# test: Telescope().sun_coord()
+# test: Telescope().sun_altaz()
 # -
 def test_telescope_110():
-    """ test Telescope.sun_coord() for incorrect input(s) """
-    assert all(_tel.sun_coord(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    """ test Telescope.sun_altaz() for incorrect input(s) """
+    assert all(_tel.sun_altaz(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 # noinspection PyUnresolvedReferences
 def test_telescope_111():
-    """ test Telescope().sun_coord() for correct input(s) """
-    assert isinstance(_tel.sun_coord(), astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
+    """ test Telescope().sun_altaz() for correct input(s) """
+    assert isinstance(_tel.sun_altaz(), astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
 
 
 def test_telescope_112():
-    """ test Telescope().sun_coord() for correct input(s) """
-    assert isinstance(_tel.sun_coord(
+    """ test Telescope().sun_altaz() for correct input(s) """
+    assert isinstance(_tel.sun_altaz(
         get_isot(random.randint(-1000, 1000), False)).alt.value, float) in OBS_TRUE_VALUES
 
 
 def test_telescope_113():
-    """ test Telescope().sun_coord() for correct input(s) """
-    assert (-90.0 <= _tel.sun_coord(
+    """ test Telescope().sun_altaz() for correct input(s) """
+    assert (-90.0 <= _tel.sun_altaz(
         get_isot(random.randint(-1000, 1000), False)).alt.value <= 90.0) in OBS_TRUE_VALUES
 
 
 def test_telescope_114():
-    """ test Telescope().sun_coord() for correct input(s) """
-    assert isinstance(_tel.sun_coord(
+    """ test Telescope().sun_altaz() for correct input(s) """
+    assert isinstance(_tel.sun_altaz(
         get_isot(random.randint(-1000, 1000), True)).az.value, float) in OBS_TRUE_VALUES
 
 
 def test_telescope_115():
-    """ test Telescope().sun_coord() for correct input(s) """
-    assert (-360.0 <= _tel.sun_coord(
+    """ test Telescope().sun_altaz() for correct input(s) """
+    assert (-360.0 <= _tel.sun_altaz(
         get_isot(random.randint(-1000, 1000), False)).az.value <= 360.0) in OBS_TRUE_VALUES
 
 
 def test_telescope_116():
-    """ test Telescope().sun_coord() for correct input(s) """
-    assert isinstance(_tel.sun_coord(
+    """ test Telescope().sun_altaz() for correct input(s) """
+    assert isinstance(_tel.sun_altaz(
         get_isot(random.randint(-1000, 1000), False)).distance.value, float) in OBS_TRUE_VALUES
 
 
 def test_telescope_117():
-    """ test Telescope().sun_coord() for correct input(s) """
-    assert (_tel.sun_coord(get_isot(random.randint(-1000, 1000), False)).distance.value > 0.0) in OBS_TRUE_VALUES
+    """ test Telescope().sun_altaz() for correct input(s) """
+    assert (_tel.sun_altaz(get_isot(random.randint(-1000, 1000), False)).distance.value > 0.0) in OBS_TRUE_VALUES
 
 
 # +
@@ -809,12 +810,14 @@ def test_telescope_125():
 # -
 def test_telescope_126():
     """ test Telescope.tonight() for incorrect input(s) """
-    assert all(_tel.tonight(obs_time=_k)[0] is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(re.match(OBS_ISO_PATTERN, _tel.tonight(utc=_k)[0]) is not None for _k in INVALID_INPUTS) \
+           in OBS_TRUE_VALUES
 
 
 def test_telescope_127():
     """ test Telescope.tonight() for incorrect input(s) """
-    assert all(_tel.tonight(obs_time=_k)[1] is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(re.match(OBS_ISO_PATTERN, _tel.tonight(utc=_k)[1]) is not None for _k in INVALID_INPUTS) \
+           in OBS_TRUE_VALUES
 
 
 def test_telescope_128():
@@ -832,8 +835,7 @@ def test_telescope_129():
 # -
 def test_telescope_130():
     """ test Telescope.zenith() for incorrect input(s) """
-    assert (all(_tel.zenith(obs_time=_k)[0] is None for _k in INVALID_INPUTS)
-            and all(_tel.zenith(obs_time=_k)[1] is None for _k in INVALID_INPUTS)) in OBS_TRUE_VALUES
+    assert all(_tel.zenith(obs_time=_k)[0] is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_131():
@@ -938,33 +940,33 @@ def test_telescope_146():
 
 
 # +
-# test: Telescope().moon_radec_now() vs. Telescope().moon_coord()
+# test: Telescope().moon_radec_now() vs. Telescope().moon_altaz()
 # -
 def test_telescope_147():
-    """ test comparison of results from Telescope.moon_radec_now() vs. Telescope.moon_coord() """
+    """ test comparison of results from Telescope.moon_radec_now() vs. Telescope.moon_altaz() """
     # get alt, az from moon_coordinates_now
     _now = _tel.moon_radec_now()
     _ra, _dec = ra_from_decimal(_now.ra.value), dec_from_decimal(_now.dec.value)
     _y = _tel.radec_to_altaz(obs_coords=f'{_ra} {_dec}')
     _alt_1, _az_1 = _y.alt.value, _y.az.value
-    # get alt, az from moon_coord
-    _moon = _tel.moon_coord()
+    # get alt, az from moon_altaz
+    _moon = _tel.moon_altaz()
     _alt_2, _az_2 = _moon.alt.value, _moon.az.value
     assert math.isclose(_alt_1, _alt_2, rel_tol=0.1) and math.isclose(_az_1, _az_2, rel_tol=0.1)
 
 
 # +
-# test: Telescope().moon_altaz()
+# test: Telescope().moon_altaz_ndays()
 # -
 def test_telescope_148():
-    """ test Telescope.moon_altaz() for incorrect input(s) """
-    assert all(_tel.moon_altaz(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    """ test Telescope.moon_altaz_ndays() for incorrect input(s) """
+    assert all(_tel.moon_altaz_ndays(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 # noinspection PyUnresolvedReferences
 def test_telescope_149():
-    """ test Telescope().moon_altaz() for correct input(s) """
-    _val = _tel.moon_altaz(get_isot(random.randint(-1000, 1000), False))
+    """ test Telescope().moon_altaz_ndays() for correct input(s) """
+    _val = _tel.moon_altaz_ndays(get_isot(random.randint(-1000, 1000), False))
     assert isinstance(_val, astropy.coordinates.sky_coordinate.SkyCoord) in OBS_TRUE_VALUES
 
 
@@ -1025,14 +1027,14 @@ def test_telescope_155():
 # -
 def test_telescope_156():
     """ test Telescope.moon_exclusion() for incorrect input(s) """
-    assert all(_tel.moon_exclusion(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.moon_exclusion(obs_time=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 # noinspection PyUnresolvedReferences
 def test_telescope_157():
     """ test Telescope().moon_exclusion() for correct input(s) """
     _val = _tel.moon_exclusion(get_isot(random.randint(-1000, 1000), False))
-    assert isinstance(_val, np.ndarray) in OBS_TRUE_VALUES
+    assert isinstance(_val, float) in OBS_TRUE_VALUES
 
 
 # +
@@ -1062,27 +1064,27 @@ def test_telescope_160():
 # -
 def test_telescope_161():
     """ test Telescope().moon_separation() for incorrect input(s) """
-    assert all(_tel.moon_separation(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.moon_separation(obs_time=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_162():
     """ test Telescope().moon_separation() for incorrect input(s) """
-    assert all(_tel.moon_separation(obs_name=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.moon_separation(obs_name=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_163():
     """ test Telescope().moon_separation() for incorrect input(s) """
-    assert all(_tel.moon_separation(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.moon_separation(obs_coords=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_164():
     """ test Telescope().moon_separation() for correct input(s) """
-    assert isinstance(_tel.moon_separation(obs_name='M51'), np.ndarray) in OBS_TRUE_VALUES
+    assert isinstance(_tel.moon_separation(obs_name='M51'), float) in OBS_TRUE_VALUES
 
 
 def test_telescope_165():
     """ test Telescope().moon_separation() for correct input(s) """
-    assert isinstance(_tel.moon_separation(obs_coords='13:30:00 47:11:00'), np.ndarray) in OBS_TRUE_VALUES
+    assert isinstance(_tel.moon_separation(obs_coords='13:30:00 47:11:00'), float) in OBS_TRUE_VALUES
 
 
 # +
@@ -1090,24 +1092,24 @@ def test_telescope_165():
 # -
 def test_telescope_166():
     """ test Telescope().moon_separation_now() for incorrect input(s) """
-    assert all(_tel.moon_separation_now(obs_name=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.moon_separation_now(obs_name=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_167():
     """ test Telescope().moon_separation_now() for incorrect input(s) """
-    assert all(_tel.moon_separation_now(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.moon_separation_now(obs_coords=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_168():
     """ test Telescope().moon_separation_now() for correct input(s) """
     _val = _tel.moon_separation_now(obs_name='M51')
-    assert (isinstance(_val, float) and _val >= 0.0) in OBS_TRUE_VALUES
+    assert (isinstance(_val, float) and -360.0 <= _val <= 360.0) in OBS_TRUE_VALUES
 
 
 def test_telescope_169():
     """ test Telescope().moon_separation_now() for correct input(s) """
     _val = _tel.moon_separation_now(obs_coords='13:30:00 47:11:00')
-    assert (isinstance(_val, float) and _val >= 0.0) in OBS_TRUE_VALUES
+    assert (isinstance(_val, float) and -360.0 <= _val <= 360.0) in OBS_TRUE_VALUES
 
 
 # +
@@ -1115,12 +1117,12 @@ def test_telescope_169():
 # -
 def test_telescope_170():
     """ test Telescope().moon_separation_today() for incorrect input(s) """
-    assert all(_tel.moon_separation_today(obs_name=_k) is None for _k in [get_hash(), {}, [], ()]) in OBS_TRUE_VALUES
+    assert all(_tel.moon_separation_today(obs_name=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_171():
     """ test Telescope().moon_separation_today() for incorrect input(s) """
-    assert all(_tel.moon_separation_today(obs_coords=_k) is None for _k in [get_hash(), {}, [], ()]) in OBS_TRUE_VALUES
+    assert all(_tel.moon_separation_today(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_172():
@@ -1195,7 +1197,7 @@ def test_telescope_181():
     _y = _tel.radec_to_altaz(obs_coords=f'{_ra} {_dec}')
     _alt_1, _az_1 = _y.alt.value, _y.az.value
     # get alt, az from moon_coord
-    _sun = _tel.sun_coord()
+    _sun = _tel.sun_altaz()
     _alt_2, _az_2 = _sun.alt.value, _sun.az.value
     assert math.isclose(_alt_1, _alt_2, rel_tol=0.1) and math.isclose(_az_1, _az_2, rel_tol=0.1)
 
@@ -1272,27 +1274,27 @@ def test_telescope_189():
 # -
 def test_telescope_190():
     """ test Telescope().sun_separation() for incorrect input(s) """
-    assert all(_tel.sun_separation(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.sun_separation(obs_time=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_191():
     """ test Telescope().sun_separation() for incorrect input(s) """
-    assert all(_tel.sun_separation(obs_name=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.sun_separation(obs_name=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_192():
     """ test Telescope().sun_separation() for incorrect input(s) """
-    assert all(_tel.sun_separation(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.sun_separation(obs_coords=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_193():
     """ test Telescope().sun_separation() for correct input(s) """
-    assert isinstance(_tel.sun_separation(obs_name='M51'), np.ndarray) in OBS_TRUE_VALUES
+    assert isinstance(_tel.sun_separation(obs_name='M51'), float) in OBS_TRUE_VALUES
 
 
 def test_telescope_194():
     """ test Telescope().sun_separation() for correct input(s) """
-    assert isinstance(_tel.sun_separation(obs_coords='13:30:00 47:11:00'), np.ndarray) in OBS_TRUE_VALUES
+    assert isinstance(_tel.sun_separation(obs_coords='13:30:00 47:11:00'), float) in OBS_TRUE_VALUES
 
 
 # +
@@ -1300,24 +1302,24 @@ def test_telescope_194():
 # -
 def test_telescope_195():
     """ test Telescope().sun_separation_now() for incorrect input(s) """
-    assert all(_tel.sun_separation_now(obs_name=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.sun_separation_now(obs_name=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_196():
     """ test Telescope().sun_separation_now() for incorrect input(s) """
-    assert all(_tel.sun_separation_now(obs_coords=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+    assert all(_tel.sun_separation_now(obs_coords=_k) is math.nan for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
 
 
 def test_telescope_197():
     """ test Telescope().sun_separation_now() for correct input(s) """
     _val = _tel.sun_separation_now(obs_name='M51')
-    assert (isinstance(_val, float) and _val >= 0.0) in OBS_TRUE_VALUES
+    assert (isinstance(_val, float) and -360.0 <= _val <= 360.0) in OBS_TRUE_VALUES
 
 
 def test_telescope_198():
     """ test Telescope().sun_separation_now() for correct input(s) """
     _val = _tel.sun_separation_now(obs_coords='13:30:00 47:11:00')
-    assert (isinstance(_val, float) and _val >= 0.0) in OBS_TRUE_VALUES
+    assert (isinstance(_val, float) and -360.0 <= _val <= 360.0) in OBS_TRUE_VALUES
 
 
 # +
@@ -1341,3 +1343,41 @@ def test_telescope_201():
 def test_telescope_202():
     """ test Telescope().sun_separation_today() for correct input(s) """
     assert isinstance(_tel.sun_separation_today(obs_coords='13:30:00 47:11:00'), np.ndarray) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().moon_illumination_ndays()
+# -
+def test_telescope_203():
+    """ test Telescope.moon_illumination_ndays() for incorrect input(s) """
+    assert all(_tel.moon_illumination_ndays(obs_time=_k) is None for _k in INVALID_INPUTS) in OBS_TRUE_VALUES
+
+
+# noinspection PyUnresolvedReferences
+def test_telescope_204():
+    """ test Telescope().moon_illumination_ndays() for correct input(s) """
+    _val = _tel.moon_illumination_ndays(get_isot(random.randint(-1000, 1000), False))
+    assert isinstance(_val, np.ndarray) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().moon_illumination_today()
+# -
+# noinspection PyUnresolvedReferences
+def test_telescope_205():
+    """ test Telescope().moon_illumination_today() for correct input(s) """
+    assert isinstance(_tel.moon_illumination_today(), np.ndarray) in OBS_TRUE_VALUES
+
+
+# +
+# test: Telescope().moon_illumination_now()
+# -
+def test_telescope_206():
+    """ test Telescope().moon_illumination_now() for correct input(s) """
+    assert isinstance(_tel.moon_illumination_now(), float) in OBS_TRUE_VALUES
+
+
+def test_telescope_207():
+    """ test Telescope().moon_illumination_now() for correct input(s) """
+    assert (0.0 <= _tel.moon_illumination_now() <= 1.0) in OBS_TRUE_VALUES
+

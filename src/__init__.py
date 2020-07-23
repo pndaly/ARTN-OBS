@@ -22,6 +22,7 @@ import os
 import pytz
 import random
 import re
+import unicodedata
 
 
 # +
@@ -29,6 +30,8 @@ import re
 # -
 OBS_ALPHABET_UC = {chr(_i): _i for _i in range(65, 91)}
 OBS_ALPHABET_LC = {chr(_i): _i for _i in range(97, 123)}
+OBS_ARCMIN = unicodedata.lookup('PRIME')
+OBS_ARCSEC = unicodedata.lookup('DOUBLE PRIME')
 OBS_ASTROPLAN_IERS_URL = 'ftp://cddis.gsfc.nasa.gov/pub/products/iers/finals2000A.all'
 OBS_ASTROPLAN_IERS_URL_ALTERNATE = 'https://datacenter.iers.org/data/9/finals2000A.all'
 OBS_BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -36,6 +39,7 @@ OBS_COMMENT_CHARS = r' #%!<>+-\/'
 OBS_DEC_PATTERN = '[+-]?[0-9]{2}:[0-9]{2}:[0-9]{2}'
 OBS_DECODE_DICT = \
     {'.us.': '_', '.sq.': "'", '.ws.': ' ', '.bs.': '\\', '.at.': '@', '.bg.': '!', '.dq.': '"', '.eq.': '='}
+OBS_DEGREE = unicodedata.lookup('DEGREE SIGN')
 OBS_ENCODE_DICT = {v: k for k, v in OBS_DECODE_DICT.items()}
 OBS_EPHEM_PATTERN = '[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]'
 OBS_FALSE_VALUES = [0, False, '0', 'false', 'f', 'FALSE', 'F']
@@ -51,6 +55,7 @@ OBS_LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 OBS_LOG_MAX_BYTES = 9223372036854775807
 OBS_MJD_OFFSET = 2400000.5
 OBS_ONE_HOUR = 1.0 / 24.0
+OBS_PROPORTIONAL = unicodedata.lookup('PROPORTIONAL TO')
 OBS_RA_PATTERN = '[0-9]{2}:[0-9]{2}:[0-9]{2}'
 OBS_RESERVED_USERNAMES = ['darks', 'focus', 'skyflats', 'standard']
 OBS_SECONDS_PER_DAY = 86400.0
