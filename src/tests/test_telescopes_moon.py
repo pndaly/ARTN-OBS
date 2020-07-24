@@ -23,6 +23,9 @@ __doc__ = """
 INVALID_INPUTS = [None, get_hash(), {}, [], ()]
 LOWER_BOUND = random.randint(-1000, 0)
 UPPER_BOUND = random.randint(0, 1000)
+ZODIAC = {1: 'Alpha Capricorni', 2: 'Alpha Aquarii', 3: 'Alpha Piscium', 4: 'Alpha Arietis', 5: 'Alpha Tauri',
+          6: 'Alpha Geminorum', 7: 'Alpha Cancri', 8: 'Alpha Leonis', 9: 'Alpha Virginis', 10: 'Alpha Librae',
+          11: 'Alpha Scorpii', 12: 'Alpha Sagittarii'}
 
 
 # +
@@ -745,14 +748,16 @@ def test_telescope_282():
 
 
 def test_telescope_283():
-    _val_t = _tel.moon_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name='M51')
-    _val_f = _tel.moon_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.moon_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
+    _val_f = _tel.moon_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
 def test_telescope_284():
-    _val_t = _tel.moon_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name='M51')
-    _val_f = _tel.moon_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.moon_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
+    _val_f = _tel.moon_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
     assert all(-360.0 <= _k <= 360.0 for _k in [_val_t, _val_f])
 
 
@@ -797,14 +802,16 @@ def test_telescope_292():
 def test_telescope_293():
     _num = random.randint(1, AST__5__MINUTES - 1)
     _ndays = random.randint(1, 5)
-    _val = _tel.moon_separation_ndays(obs_name='M51', ndays=_ndays)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.moon_separation_ndays(obs_name=_t1, ndays=_ndays)
     assert isinstance(_val[_num], float)
 
 
 def test_telescope_294():
     _num = random.randint(1, AST__5__MINUTES - 1)
     _ndays = random.randint(1, 5)
-    _val = _tel.moon_separation_ndays(obs_name='M51', ndays=_ndays)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.moon_separation_ndays(obs_name=_t1, ndays=_ndays)
     assert (-360.0 <= _val[_num] <= 360.0)
 
 
@@ -842,14 +849,16 @@ def test_telescope_301():
 
 
 def test_telescope_302():
-    _val_t = _tel.moon_separation_now(obs_name='M51')
-    _val_f = _tel.moon_separation_now(obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.moon_separation_now(obs_name=_t1)
+    _val_f = _tel.moon_separation_now(obs_name=_t1)
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
 def test_telescope_303():
-    _val_t = _tel.moon_separation_now(obs_name='M51')
-    _val_f = _tel.moon_separation_now(obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.moon_separation_now(obs_name=_t1)
+    _val_f = _tel.moon_separation_now(obs_name=_t1)
     assert all(-360.0 <= _k <= 360.0 for _k in [_val_t, _val_f])
 
 
@@ -885,13 +894,15 @@ def test_telescope_311():
 
 def test_telescope_312():
     _num = random.randint(1, AST__5__MINUTES - 1)
-    _val = _tel.moon_separation_today(obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.moon_separation_today(obs_name=_t1)
     assert isinstance(_val[_num], float)
 
 
 def test_telescope_313():
     _num = random.randint(1, AST__5__MINUTES - 1)
-    _val = _tel.moon_separation_today(obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.moon_separation_today(obs_name=_t1)
     assert (-360.0 <= _val[_num] <= 360.0)
 
 

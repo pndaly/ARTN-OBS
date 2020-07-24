@@ -23,6 +23,9 @@ __doc__ = """
 INVALID_INPUTS = [None, get_hash(), {}, [], ()]
 LOWER_BOUND = random.randint(-1000, 0)
 UPPER_BOUND = random.randint(0, 1000)
+ZODIAC = {1: 'Alpha Capricorni', 2: 'Alpha Aquarii', 3: 'Alpha Piscium', 4: 'Alpha Arietis', 5: 'Alpha Tauri',
+          6: 'Alpha Geminorum', 7: 'Alpha Cancri', 8: 'Alpha Leonis', 9: 'Alpha Virginis', 10: 'Alpha Librae',
+          11: 'Alpha Scorpii', 12: 'Alpha Sagittarii'}
 
 
 # +
@@ -401,14 +404,16 @@ def test_telescope_112():
 
 
 def test_telescope_113():
-    _val_t = _tel.sun_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name='M51')
-    _val_f = _tel.sun_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.sun_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
+    _val_f = _tel.sun_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
 def test_telescope_114():
-    _val_t = _tel.sun_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name='M51')
-    _val_f = _tel.sun_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.sun_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
+    _val_f = _tel.sun_separation(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
     assert all(-360.0 <= _k <= 360.0 for _k in [_val_t, _val_f])
 
 
@@ -453,14 +458,16 @@ def test_telescope_122():
 def test_telescope_123():
     _num = random.randint(1, AST__5__MINUTES - 1)
     _ndays = random.randint(1, 5)
-    _val = _tel.sun_separation_ndays(obs_name='M51', ndays=_ndays)[_num]
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.sun_separation_ndays(obs_name=_t1, ndays=_ndays)[_num]
     assert isinstance(_val, float)
 
 
 def test_telescope_124():
     _num = random.randint(1, AST__5__MINUTES - 1)
     _ndays = random.randint(1, 5)
-    _val = _tel.sun_separation_ndays(obs_name='M51', ndays=_ndays)[_num]
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.sun_separation_ndays(obs_name=_t1, ndays=_ndays)[_num]
     assert (-360.0 <= _val <= 360.0)
 
 
@@ -498,14 +505,16 @@ def test_telescope_131():
 
 
 def test_telescope_132():
-    _val_t = _tel.sun_separation_now(obs_name='M51')
-    _val_f = _tel.sun_separation_now(obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.sun_separation_now(obs_name=_t1)
+    _val_f = _tel.sun_separation_now(obs_name=_t1)
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
 def test_telescope_133():
-    _val_t = _tel.sun_separation_now(obs_name='M51')
-    _val_f = _tel.sun_separation_now(obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.sun_separation_now(obs_name=_t1)
+    _val_f = _tel.sun_separation_now(obs_name=_t1)
     assert all(-360.0 <= _k <= 360.0 for _k in [_val_t, _val_f])
 
 
@@ -541,13 +550,15 @@ def test_telescope_141():
 
 def test_telescope_142():
     _num = random.randint(1, AST__5__MINUTES - 1)
-    _val = _tel.sun_separation_today(obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.sun_separation_today(obs_name=_t1)
     assert isinstance(_val[_num], float)
 
 
 def test_telescope_143():
     _num = random.randint(1, AST__5__MINUTES - 1)
-    _val = _tel.sun_separation_today(obs_name='M51')
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.sun_separation_today(obs_name=_t1)
     assert (-360.0 <= _val[_num] <= 360.0)
 
 
