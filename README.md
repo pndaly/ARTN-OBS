@@ -8,7 +8,7 @@ any (valid) telescope and instrument combination within the network.
 ## Quick Start
 
 ```bash
-  % source etc/OBS.sh `pwd`
+  % source etc/OBS.sh `pwd` load
 
   % python3.7 artn_schedule.py --help
     usage: artn_schedule.py [-h] [--instrument INSTRUMENT] [--telescope TELESCOPE]
@@ -97,4 +97,6 @@ the startup script will load the new ephemeris *every* time it is run. Feel free
 
 ------------------------------------------------------------
 
-Last Updated: 2020619
+Last Updated: 2020723
+
+Last Author: Phil Daly (pndaly@arizona.edu)

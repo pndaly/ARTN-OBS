@@ -29,6 +29,7 @@ AST__MOON__ILLUM = [0.0, 25.0, 50.0, 75.0, 100.0, 75.0, 50.0, 25.0]
 AST__MOON__PHASE = [math.pi, 3.0*math.pi/4.0, math.pi/2.0, math.pi/4.0,
                     0.0, math.pi/4.0, math.pi/2.0, 3.0*math.pi/4.0]
 AST__MOON__WHICH = ['new', 'first quarter', 'full', 'last quarter']
+AST__MOON__STEWARD = ['bright', 'dark', 'grey']
 AST__NDAYS = 1
 AST__TWILIGHT = ['astronomical', 'civil', 'nautical']
 AST__WHICH = ['next', 'previous', 'nearest']
@@ -356,7 +357,7 @@ class Telescope(object):
             self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
             return self.__observer.target_is_up(self.__time, target=self.__coords)
         except:
-            return False
+            return None
 
     # +
     # method: is_observable_ndays()
@@ -380,7 +381,7 @@ class Telescope(object):
             return self.is_observable_ndays(obs_time=f'{get_isot(0, True)}', obs_name=obs_name,
                                             obs_coords=obs_coords, ndays=1)[0]
         except:
-            return False
+            return None
 
     # +
     # method: is_observable_today()
@@ -409,7 +410,7 @@ class Telescope(object):
     # method: midday()
     # -
     def midday(self, obs_time=Time(get_isot(0, True)), which=AST__WHICH[-1], utc=False):
-        """ returns sun midday time """
+        """ returns midday time """
         try:
             which = which.lower() if which.lower() in AST__WHICH else AST__WHICH[-1]
             utc = utc if isinstance(utc, bool) else False
@@ -423,7 +424,7 @@ class Telescope(object):
     # method: midnight()
     # -
     def midnight(self, obs_time=Time(get_isot(0, True)), which=AST__WHICH[-1], utc=False):
-        """ returns sun midnight time """
+        """ returns midnight time """
         try:
             which = which.lower() if which.lower() in AST__WHICH else AST__WHICH[-1]
             utc = utc if isinstance(utc, bool) else False
@@ -702,24 +703,24 @@ class Telescope(object):
     # +
     # method: moon_is_up()
     # -
-    def moon_is_up(self, obs_time=Time(get_isot(0, True)), horizon=0*u.deg):
-        """ returns lunar  """
+    def moon_is_up(self, obs_time=Time(get_isot(0, True)), horizon=0.0):
+        """ returns flag for moon above horizon """
         try:
             self.__convert_time__(obs_time=obs_time)
             return self.__observer.moon_alt(self.__time) > horizon
         except:
-            return False
+            return None
 
     # +
     # method: moon_is_down()
     # -
-    def moon_is_down(self, obs_time=Time(get_isot(0, True)), horizon=0*u.deg):
-        """ returns True if moon has below horizon """
+    def moon_is_down(self, obs_time=Time(get_isot(0, True)), horizon=0.0):
+        """ returns flag for moon below horizon """
         try:
             self.__convert_time__(obs_time=obs_time)
             return self.__observer.moon_alt(self.__time) < horizon
         except:
-            return False
+            return None
 
     # +
     # method: moon_phase()
@@ -950,7 +951,7 @@ class Telescope(object):
         try:
             self.__convert_time__(obs_time=obs_time)
             self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
-            return self.__observer.parallactic_angle(time=self.__time, target=self.__coords)
+            return self.__observer.parallactic_angle(time=self.__time, target=self.__coords).degree
         except:
             return math.nan
 
@@ -1098,7 +1099,7 @@ class Telescope(object):
             _sun_coord = self.sun_radec(obs_time=obs_time)
             self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
             _obj_radec = SkyCoord(ra=self.__coords.ra.value * u.deg, dec=self.__coords.dec.value * u.deg)
-            return _obj_radec.separation(_sun_coord).deg
+            return _obj_radec.separation(_sun_coord).degree
         except:
             return math.nan
 
@@ -1112,7 +1113,7 @@ class Telescope(object):
             _sun_coords = self.sun_radec_ndays(obs_time=obs_time, ndays=ndays)
             self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
             _obj_radec = SkyCoord(ra=self.__coords.ra.value * u.deg, dec=self.__coords.dec.value * u.deg)
-            return _obj_radec.separation(_sun_coords).deg
+            return _obj_radec.separation(_sun_coords).degree
         except:
             return None
 
@@ -1277,11 +1278,13 @@ class Telescope(object):
     # +
     # method: sky_separation()
     # -
-    def sky_separation(self, obs_name_1='', obs_coords_1='', obs_name_2='', obs_coords_2=''):
+    def sky_separation(self, obs_name_1='', obs_name_2='', obs_coords_1='', obs_coords_2=''):
         """ returns angular separation (in degrees) of 2 objects """
         try:
-            _c1 = self.__convert_coords__(obs_name=obs_name_1, obs_coords=obs_coords_1).coord
-            _c2 = self.__convert_coords__(obs_name=obs_name_2, obs_coords=obs_coords_2).coord
+            _c1 = self.__convert_coords__(obs_name=obs_name_1, obs_coords=obs_coords_1)
+            _c1 = _c1.coord if hasattr(_c1, 'coord') else _c1
+            _c2 = self.__convert_coords__(obs_name=obs_name_2, obs_coords=obs_coords_2)
+            _c2 = _c2.coord if hasattr(_c2, 'coord') else _c2
             return _c1.separation(_c2).degree
         except:
             return math.nan
