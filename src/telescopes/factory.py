@@ -53,6 +53,7 @@ class Telescope(object):
 
         # set default(s)
         self.__coords = None
+        self.__frame = None
         self.__msg = None
         self.__time = None
 
@@ -1202,8 +1203,9 @@ class Telescope(object):
         """ returns target airmass """
         try:
             self.__convert_time__(obs_time=obs_time)
+            self.__frame = AltAz(obstime=self.__time, location=self.__observatory)
             self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
-            return self.__coords.transform_to(AltAz(obstime=self.__time, location=self.__observatory)).secz.value
+            return self.__coords.transform_to(self.__frame).secz.value
         except:
             return math.nan
 
@@ -1215,8 +1217,9 @@ class Telescope(object):
         try:
             ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
             self.__convert_time__(obs_time=obs_time, ndays=ndays)
+            self.__frame = AltAz(obstime=self.__time, location=self.__observatory)
             self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
-            return self.__coords.transform_to(AltAz(obstime=self.__time, location=self.__observatory)).secz.value
+            return self.__coords.transform_to(self.__frame)
         except:
             return None
 
@@ -1227,7 +1230,7 @@ class Telescope(object):
         """ returns target airmass now """
         try:
             return self.target_airmass_ndays(obs_time=f'{get_isot(0, True)}', obs_name=obs_name,
-                                             obs_coords=obs_coords, ndays=1)[0]
+                                             obs_coords=obs_coords, ndays=1)[0].secz.value
         except:
             return math.nan
 
@@ -1239,6 +1242,55 @@ class Telescope(object):
         try:
             return self.target_airmass_ndays(obs_time=f"{get_isot(0, False).split('T')[0]}T00:00:00.000000",
                                              obs_name=obs_name, obs_coords=obs_coords, ndays=1)
+        except:
+            return None
+
+    # +
+    # method: target_altaz()
+    # -
+    def target_altaz(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
+        """ returns target altaz """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            self.__frame = AltAz(obstime=self.__time, location=self.__observatory)
+            self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
+            return self.__coords.transform_to(self.__frame)
+        except:
+            return None
+
+    # +
+    # method: target_altaz_ndays()
+    # -
+    def target_altaz_ndays(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='', ndays=AST__NDAYS):
+        """ returns target altaz over ndays """
+        try:
+            ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
+            self.__convert_time__(obs_time=obs_time, ndays=ndays)
+            self.__frame = AltAz(obstime=self.__time, location=self.__observatory)
+            self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
+            return self.__coords.transform_to(self.__frame)
+        except:
+            return None
+
+    # +
+    # method: target_altaz_now()
+    # -
+    def target_altaz_now(self, obs_name='', obs_coords=''):
+        """ returns target altaz now """
+        try:
+            return self.target_altaz_ndays(obs_time=f'{get_isot(0, True)}', obs_name=obs_name,
+                                           obs_coords=obs_coords, ndays=1)[0]
+        except:
+            return None
+
+    # +
+    # method: target_altaz_today()
+    # -
+    def target_altaz_today(self, obs_name='', obs_coords=''):
+        """ returns target altaz today """
+        try:
+            return self.target_altaz_ndays(obs_time=f"{get_isot(0, False).split('T')[0]}T00:00:00.000000",
+                                           obs_name=obs_name, obs_coords=obs_coords, ndays=1)
         except:
             return None
 
@@ -1297,76 +1349,6 @@ class Telescope(object):
             return self.lst(obs_time=self.__time), dec_from_decimal(self.__latitude)
         except:
             return None, None
-
-    # +
-    # method: airmass_plot()
-    # -
-    # def airmass_plot(self, _ra=MIN__RIGHT__ASCENSION, _dec=MIN__DECLINATION, _date=get_isot(0, True),
-    #                  _ndays=AST__NDAYS, _from_now=False):
-    #     """ returns an image of airmass for object for several days """
-    #
-    #     # check input(s)
-    #     # _ra = _ra if isinstance(_ra, float) else MIN__RIGHT__ASCENSION
-    #     # _ra = _ra if _ra > MIN__RIGHT__ASCENSION else MIN__RIGHT__ASCENSION
-    #     # _ra = _ra if _ra < MAX__RIGHT__ASCENSION else MAX__RIGHT__ASCENSION
-    #     # _dec = _dec if isinstance(_dec, float) else MIN__DECLINATION
-    #     # _dec = _dec if _dec > MIN__DECLINATION else MIN__DECLINATION
-    #     # _dec = _dec if _dec < MAX__DECLINATION else MAX__DECLINATION
-    #     # _date = _date if re.match(OBS_ISO_PATTERN, _date) is not None else get_isot(0, True)
-    #     # _ndays = _ndays if isinstance(_ndays, int) else AST__NDAYS
-    #     # _ndays = _ndays if _ndays > 0 else AST__NDAYS
-    #     # _from_now = _from_now if isinstance(_from_now, bool) else False
-    #     #
-    #     # # set default(s)
-    #     # _time_now = Time.now()
-    #     # if 'T' in _date:
-    #     #     _start = Time(_date) if _from_now else Time(_date.split('T')[0])
-    #     # else:
-    #     #     _start = Time(_date) if _from_now else Time(_date.split()[0])
-    #     # _now = Time(_start.iso)
-    #     # _start = Time(_start.iso)
-    #     # _start = Time(_start) + (_ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES))
-    #     # _title = f"Airmass [{_ndays} Day(s)]"
-    #     #
-    #     # _ra_hms = Angle(_ra, unit=u.deg).hms
-    #     # _HH, _MM, _SS = _ra_hms[0], _ra_hms[1], _ra_hms[2]
-    #     # _sign = '-' if str(_dec)[0] == '-' else '+'
-    #     # _dec_dms = Angle(_dec, unit=u.deg).dms
-    #     # _dd, _mm, _ss = abs(_dec_dms[0]), abs(_dec_dms[1]), abs(_dec_dms[2])
-    #     # _sub_title = f"RA={int(_HH):02d}:{int(_MM):02d}:{int(_SS):02d} ({_ra:.3f}{UNI__DEGREE}), " \
-    #     #              f"Dec={_sign}{int(_dd):02d}{UNI__DEGREE}{int(_mm):02d}{UNI__ARCMIN}{int(_ss):02d}{UNI__ARCSEC} " \
-    #     #              f"({_dec:.3f}{UNI__DEGREE})"
-    #     #
-    #     # # modify to reference frame and get airmass
-    #     # _frame = AltAz(obstime=_start, location=self.__observatory)
-    #     # _radecs = SkyCoord(ra=_ra*u.deg, dec=_dec*u.deg)
-    #     # _altaz = _radecs.transform_to(_frame)
-    #     #
-    #     # # extract axes
-    #     # _max_airmass = TEL__MAX__AIRMASS[f'{self.__name.lower()}']
-    #     # _min_airmass = TEL__MIN__AIRMASS[f'{self.__name.lower()}']
-    #     # _time_axis = _start[(_altaz.secz <= _max_airmass) & (_altaz.secz >= _min_airmass)]
-    #     # _airmass_axis = _altaz.secz[(_altaz.secz <= _max_airmass) & (_altaz.secz >= _min_airmass)]
-    #     #
-    #     # # plot it
-    #     # fig, ax = plt.subplots()
-    #     # ax.plot_date(_time_axis.plot_date, _airmass_axis, 'r-')
-    #     # ax.plot_date([_time_now.plot_date, _time_now.plot_date], [-999, 999], 'y--')
-    #     # xfmt = mdates.DateFormatter('%H:%M')
-    #     # ax.xaxis.set_major_formatter(xfmt)
-    #     # plt.gcf().autofmt_xdate()
-    #     # ax.set_ylim([_max_airmass, _min_airmass])
-    #     # ax.set_xlim([_start.datetime[0], _start.datetime[-1]])
-    #     # ax.set_title(f'{_title}\n{_sub_title}')
-    #     # ax.set_ylabel(f'Airmass ({UNI__PROPORTIONAL} secZ)')
-    #     # ax.set_xlabel(f"{str(_now).split()[0]} (UTC)")
-    #     # buf = io.BytesIO()
-    #     # # plt.savefig(f'{_file}')
-    #     # plt.savefig(buf, format='png', dpi=100)
-    #     # plt.close()
-    #     # data = buf.getvalue()
-    #     data = self.__name
-    #     return f'data:image/png;base64,{base64.b64encode(data).decode()}'
 
     # +
     # (static) method: fm_lunation()
@@ -1438,3 +1420,286 @@ class Telescope(object):
         except:
             pass
         return None
+
+
+# +
+# import(s)
+# -
+from matplotlib import cm as cm
+from matplotlib import dates as mdates
+from matplotlib import pyplot as plt
+from astropy.visualization import astropy_mpl_style
+from astropy.visualization import quantity_support
+
+import datetime
+import io
+import numpy
+
+
+# +
+# initialize
+# -
+plt.style.use(astropy_mpl_style)
+quantity_support()
+
+
+# +
+# constant(s)
+# -
+COLOUR_MAPS = [_map for _map in cm.datad]
+PLOT_ALTAZ = {'x_axis': None, 'x_label': '(UTC)', 'x_min': None, 'x_max': None, 'y_axis': None, 'y_invert': False,
+              'y_label': f'Altitude ({OBS_DEGREE})', 'y_min': -18.0, 'y_max': 90.0, 'z_axis': None,
+              'z_label': f'Azimuth ({OBS_DEGREE})', 'zp_min': 0.0, 'zp_max': 0.0, 'color_utc': 'red',
+              'color_zero': 'black', 'color_map': 'viridis', 'title': '', 'show': False, 'file': ''}
+
+
+# +
+# class: AstroPlot(Telescope)
+# -
+# noinspection PyBroadException,PyUnresolvedReferences,PyTypeChecker
+class AstroPlot(Telescope):
+
+    # +
+    # method: __init__
+    # -
+    def __init__(self, name='', log=None):
+
+        # initialize parent(s)
+        super().__init__(name, log)
+        self.__name = self.name
+        self.__log = self.log
+
+        # set variable(s)
+        self.__airmass = None
+        self.__airmass_az = None
+        self.__airmass_secz = None
+        self.__airmass_time = None
+        self.__dec = None
+        self.__moon = None
+        self.__moon_alt = None
+        self.__moon_az = None
+        self.__moon_time = None
+        self.__ra = None
+        self.__sun = None
+        self.__sun_alt = None
+        self.__sun_az = None
+        self.__sun_time = None
+        self.__target = None
+        self.__target_alt = None
+        self.__target_az = None
+        self.__target_time = None
+
+    # +
+    # (hidden) method: __verify_keys__()
+    # -
+    @staticmethod
+    def __verify_keys__(_dict=None, _keys=None):
+        try:
+            return all(_k in _keys for _k in _dict)
+        except:
+            return False
+
+    # +
+    # (hidden) method: __verify_dict__()
+    # -
+    @staticmethod
+    def __verify_dict__(_dict=None):
+        try:
+            return all(isinstance(_v, (float, str, bool, numpy.ndarray, datetime.datetime)) for _k, _v in _dict.items())
+        except:
+            return False
+
+    # +
+    # (hidden) method: __plot_altaz__()
+    # -
+    @staticmethod
+    def __plot_altaz__(**kwargs):
+        """ plot altaz """
+
+        # set variable(s)
+        _now = Time(get_isot(0, True))
+
+        # generate plot
+        fig, ax = plt.subplots()
+        _ax_scatter = ax.scatter(
+            kwargs['x_axis'], kwargs['y_axis'], c=kwargs['z_axis'], lw=0, s=8, cmap=kwargs['color_map'])
+        ax.plot_date([_now.datetime, _now.datetime], [kwargs['y_min'], kwargs['y_max']], kwargs['color_utc'])
+        ax.plot_date([kwargs['x_min'], kwargs['x_max']], [kwargs['zp_min'], kwargs['zp_max']], kwargs['color_zero'])
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+        plt.gcf().autofmt_xdate()
+        plt.colorbar(_ax_scatter, ax=ax).set_label(kwargs['z_label'])
+        ax.set_ylim([kwargs['y_min'], kwargs['y_max']])
+        ax.set_xlim([kwargs['x_min'], kwargs['x_max']])
+        ax.set_title(kwargs['title'])
+        ax.set_ylabel(kwargs['y_label'])
+        ax.set_xlabel(kwargs['x_label'])
+        if kwargs['y_invert']:
+            ax.invert_yaxis()
+
+        # save
+        _buf = io.BytesIO()
+        if kwargs['file'] != '':
+            plt.savefig(kwargs['file'])
+            plt.savefig(_buf, format='png', dpi=100)
+        _data = _buf.getvalue()
+
+        # show
+        if kwargs['show']:
+            plt.show()
+
+        # return data
+        return f'data:image/png;base64,{base64.b64encode(_data).decode()}'
+
+    # +
+    # method: plot_airmass()
+    # -
+    def plot_airmass(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
+                     ndays=AST__NDAYS, save=True, show=True):
+        """ plot airmass """
+        try:
+            ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
+            save = save if isinstance(save, bool) else True
+            show = show if isinstance(show, bool) else False
+
+            # get airmass array
+            self.__airmass = self.target_airmass_ndays(
+                obs_time=obs_time, obs_name=obs_name, obs_coords=obs_coords, ndays=ndays)
+
+            # separate into time and secz axes
+            self.__airmass_time = self.__airmass.obstime[
+                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
+            self.__airmass_secz = self.__airmass.secz[
+                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
+            self.__airmass_az = self.__airmass.az[
+                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
+
+            # create label(s)
+            _ra_d, _dec_d = self.coords.ra.degree, self.coords.dec.degree
+            _ra_s, _dec_s = ra_from_decimal(_ra_d), dec_from_decimal(_dec_d)
+            _ra_l = _ra_s.replace(':', '').replace('.', '').strip()[:6]
+            _dec_l = _dec_s.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
+            _file = f'plot_{_ra_l}_{_dec_l}.png'
+            _title = f"{obs_name} RA={_ra_s[:10]}, Dec={_dec_s[:11]}\n" \
+                     f"(RA={_ra_d:.3f}{OBS_DEGREE}, Dec={_dec_d:.3f}{OBS_DEGREE})"
+            _now = Time(get_isot(0, True))
+            _time = str(self.__airmass_time[0]).split()[0]
+
+            # generate plot
+            _time = str(self.__airmass_time[0]).split()[0]
+            _payload = {'x_axis': self.__airmass_time.datetime, 'x_label': f'{_time} (UTC)',
+                        'x_min': self.__airmass_time.datetime[0], 'x_max': self.__airmass_time.datetime[-1],
+                        'y_axis': self.__airmass_secz, 'z_axis': np.array(self.__airmass_az),
+                        'y_min': self.min_airmass, 'y_max': self.max_airmass, 'zp_min': 2.0,
+                        'y_label': f'Airmass ({OBS_PROPORTIONAL} secZ)', 'zp_max': 2.0, 'y_invert': True,
+                        'title': f'{_title}', 'show': show, 'file': f'{_file}' if save else ''}
+            _data = {**PLOT_ALTAZ, **_payload}
+            if self.__verify_keys__(_data, PLOT_ALTAZ.keys()) and self.__verify_dict__(_data):
+                return self.__plot_altaz__(**_data)
+            else:
+                return None
+        except:
+            return None
+
+    # +
+    # method: plot_moon_altaz()
+    # -
+    def plot_moon_altaz(self, obs_time=Time(get_isot(0, True)), ndays=AST__NDAYS, save=True, show=True):
+        """ plot lunar altaz """
+        try:
+            # get default(s)
+            ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
+            save = save if isinstance(save, bool) else True
+            show = show if isinstance(show, bool) else True
+
+            # get array(s)
+            self.__moon = self.moon_altaz_ndays(obs_time=obs_time, ndays=ndays)
+            self.__moon_time = self.__moon.obstime
+            self.__moon_alt = self.__moon.alt
+            self.__moon_az = self.__moon.az
+
+            # return data
+            _time = str(self.__moon_time[0]).split()[0]
+            _payload = {'x_axis': self.__moon_time.datetime, 'x_label': f'{_time} (UTC)',
+                        'x_min': self.__moon_time.datetime[0], 'x_max': self.__moon_time.datetime[-1],
+                        'y_axis': self.__moon_alt.degree, 'z_axis': np.array(self.__moon_az.degree),
+                        'title': 'Moon', 'show': show, 'file': 'plot_moon.png' if save else ''}
+            _data = {**PLOT_ALTAZ, **_payload}
+            if self.__verify_keys__(_data, PLOT_ALTAZ.keys()) and self.__verify_dict__(_data):
+                return self.__plot_altaz__(**_data)
+            else:
+                return None
+        except:
+            return None
+
+    # +
+    # method: plot_sun_altaz()
+    # -
+    def plot_sun_altaz(self, obs_time=Time(get_isot(0, True)), ndays=AST__NDAYS, save=True, show=True):
+        """ plot solar altaz """
+        try:
+            # get default(s)
+            ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
+            save = save if isinstance(save, bool) else True
+            show = show if isinstance(show, bool) else True
+
+            # get array(s)
+            self.__sun = self.sun_altaz_ndays(obs_time=obs_time, ndays=ndays)
+            self.__sun_time = self.__sun.obstime
+            self.__sun_alt = self.__sun.alt
+            self.__sun_az = self.__sun.az
+
+            # return data
+            _time = str(self.__airmass_time[0]).split()[0]
+            _payload = {'x_axis': self.__sun_time.datetime, 'x_label': f'{_time} (UTC)',
+                        'x_min': self.__sun_time.datetime[0], 'x_max': self.__sun_time.datetime[-1],
+                        'y_axis': self.__sun_alt.degree, 'z_axis': np.array(self.__sun_az.degree),
+                        'title': 'Sun', 'show': show, 'file': 'plot_sun.png' if save else ''}
+            _data = {**PLOT_ALTAZ, **_payload}
+            if self.__verify_keys__(_data, PLOT_ALTAZ.keys()) and self.__verify_dict__(_data):
+                return self.__plot_altaz__(**_data)
+            else:
+                return None
+        except:
+            return None
+
+    # +
+    # method: plot_target_altaz()
+    # -
+    def plot_target_altaz(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
+                          ndays=AST__NDAYS, save=True, show=True):
+        """ plot target altaz """
+        try:
+            # get default(s)
+            ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
+            save = save if isinstance(save, bool) else True
+            show = show if isinstance(show, bool) else False
+
+            # get array(s)
+            self.__target = self.target_altaz_ndays(
+                obs_time=obs_time, obs_name=obs_name, obs_coords=obs_coords, ndays=ndays)
+            self.__target_time = self.__target.obstime
+            self.__target_alt = self.__target.alt
+            self.__target_az = self.__target.az
+
+            # create label(s)
+            _ra_d, _dec_d = self.coords.ra.degree, self.coords.dec.degree
+            _ra_s, _dec_s = ra_from_decimal(_ra_d), dec_from_decimal(_dec_d)
+            _ra_l = _ra_s.replace(':', '').replace('.', '').strip()[:6]
+            _dec_l = _dec_s.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
+            _file = f'plot_{_ra_l}_{_dec_l}.png'
+            _title = f"{obs_name} RA={_ra_s[:10]}, Dec={_dec_s[:11]}\n" \
+                     f"(RA={_ra_d:.3f}{OBS_DEGREE}, Dec={_dec_d:.3f}{OBS_DEGREE})"
+
+            # return data
+            _time = str(self.__target_time[0]).split()[0]
+            _payload = {'x_axis': self.__target_time.datetime, 'x_label': f'{_time} (UTC)',
+                        'x_min': self.__target_time.datetime[0], 'x_max': self.__target_time.datetime[-1],
+                        'y_axis': self.__target_alt.degree, 'z_axis': np.array(self.__target_az.degree),
+                        'title': f'{_title}', 'show': show, 'file': f'{_file}' if save else ''}
+            _data = {**PLOT_ALTAZ, **_payload}
+            if self.__verify_keys__(_data, PLOT_ALTAZ.keys()) and self.__verify_dict__(_data):
+                return self.__plot_altaz__(**_data)
+            else:
+                return None
+        except:
+            return None
