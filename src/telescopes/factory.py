@@ -14,9 +14,24 @@ from astropy.coordinates import AltAz
 from astropy.coordinates import get_moon
 from astropy.coordinates import get_sun
 
+from matplotlib import cm as cm
+from matplotlib import dates as mdates
+from matplotlib import pyplot as plt
+from astropy.visualization import astropy_mpl_style
+from astropy.visualization import quantity_support
+
 import astropy
+import datetime
+import io
 import math
-import numpy as np
+import numpy
+
+
+# +
+# initialize
+# -
+plt.style.use(astropy_mpl_style)
+quantity_support()
 
 
 # +
@@ -24,6 +39,7 @@ import numpy as np
 # -
 AST__4__MINUTES = int(24.0 * 60.0 / 4.0)
 AST__5__MINUTES = int(24.0 * 60.0 / 5.0)
+AST__COLOUR__MAPS = [_map for _map in cm.datad]
 AST__MOON__CIVIL = {0: 'new', 1: 'waxing crescent', 2: 'first quarter', 3: 'waxing gibbous',
                     4: 'full', 5: 'waning gibbous', 6: 'last quarter', 7: 'waning crescent'}
 AST__MOON__ILLUM = [0.0, 25.0, 50.0, 75.0, 100.0, 75.0, 50.0, 25.0]
@@ -32,6 +48,11 @@ AST__MOON__PHASE = [math.pi, 3.0*math.pi/4.0, math.pi/2.0, math.pi/4.0,
 AST__MOON__WHICH = ['new', 'first quarter', 'full', 'last quarter']
 AST__MOON__STEWARD = ['bright', 'dark', 'grey']
 AST__NDAYS = 1
+AST__PLOT__ALTAZ = {'color_utc': 'yellow', 'color_zero': 'black', 'color_map': 'viridis', 'file': '', 'show': False,
+                    'title': '', 'x_axis': None, 'x_label': '', 'x_min': None, 'x_max': None, 'y_axis': None,
+                    'y_invert': False, 'y_label': f'Altitude ({OBS_DEGREE})', 'y_min': -18.0, 'y_max': 90.0,
+                    'z_axis': None, 'z_label': f'Azimuth ({OBS_DEGREE})', 'zp_min': 0.0, 'zp_max': 0.0}
+AST__PLOT__KEYS = [_k for _k in AST__PLOT__ALTAZ]
 AST__TWILIGHT = ['astronomical', 'civil', 'nautical']
 AST__WHICH = ['next', 'previous', 'nearest']
 
@@ -266,13 +287,13 @@ class Telescope(object):
         try:
             if isinstance(obs_time, astropy.time.core.Time) and obs_time.scale.lower() == 'utc':
                 if isinstance(ndays, int) and ndays > 0:
-                    self.__time = Time(obs_time.iso) + (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+                    self.__time = Time(obs_time.iso) + (ndays * u.day * numpy.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
                 else:
                     self.__time = obs_time
             elif re.match(OBS_ISO_PATTERN, obs_time) is not None:
                 if isinstance(ndays, int) and ndays > 0:
                     self.__time = Time(obs_time.replace('T', ' ')) + \
-                                  (ndays * u.day * np.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
+                                  (ndays * u.day * numpy.linspace(0.0, 1.0, AST__5__MINUTES*ndays))
                 else:
                     self.__time = Time(obs_time)
             else:
@@ -901,7 +922,7 @@ class Telescope(object):
             return None
 
     # +
-    # method: moon_steward() - TO DO
+    # method: moon_steward()
     # -
     def moon_steward(self, obs_time=get_isot(0, True)):
         """ returns lunar phase for steward observatory """
@@ -1423,37 +1444,6 @@ class Telescope(object):
 
 
 # +
-# import(s)
-# -
-from matplotlib import cm as cm
-from matplotlib import dates as mdates
-from matplotlib import pyplot as plt
-from astropy.visualization import astropy_mpl_style
-from astropy.visualization import quantity_support
-
-import datetime
-import io
-import numpy
-
-
-# +
-# initialize
-# -
-plt.style.use(astropy_mpl_style)
-quantity_support()
-
-
-# +
-# constant(s)
-# -
-COLOUR_MAPS = [_map for _map in cm.datad]
-PLOT_ALTAZ = {'x_axis': None, 'x_label': '(UTC)', 'x_min': None, 'x_max': None, 'y_axis': None, 'y_invert': False,
-              'y_label': f'Altitude ({OBS_DEGREE})', 'y_min': -18.0, 'y_max': 90.0, 'z_axis': None,
-              'z_label': f'Azimuth ({OBS_DEGREE})', 'zp_min': 0.0, 'zp_max': 0.0, 'color_utc': 'red',
-              'color_zero': 'black', 'color_map': 'viridis', 'title': '', 'show': False, 'file': ''}
-
-
-# +
 # class: AstroPlot(Telescope)
 # -
 # noinspection PyBroadException,PyUnresolvedReferences,PyTypeChecker
@@ -1471,6 +1461,7 @@ class AstroPlot(Telescope):
 
         # set variable(s)
         self.__airmass = None
+        self.__airmass_alt = None
         self.__airmass_az = None
         self.__airmass_secz = None
         self.__airmass_time = None
@@ -1478,36 +1469,19 @@ class AstroPlot(Telescope):
         self.__moon = None
         self.__moon_alt = None
         self.__moon_az = None
+        self.__moon_secz = None
         self.__moon_time = None
         self.__ra = None
         self.__sun = None
         self.__sun_alt = None
         self.__sun_az = None
+        self.__sun_secz = None
         self.__sun_time = None
         self.__target = None
         self.__target_alt = None
         self.__target_az = None
+        self.__target_sez = None
         self.__target_time = None
-
-    # +
-    # (hidden) method: __verify_keys__()
-    # -
-    @staticmethod
-    def __verify_keys__(_dict=None, _keys=None):
-        try:
-            return all(_k in _keys for _k in _dict)
-        except:
-            return False
-
-    # +
-    # (hidden) method: __verify_dict__()
-    # -
-    @staticmethod
-    def __verify_dict__(_dict=None):
-        try:
-            return all(isinstance(_v, (float, str, bool, numpy.ndarray, datetime.datetime)) for _k, _v in _dict.items())
-        except:
-            return False
 
     # +
     # (hidden) method: __plot_altaz__()
@@ -1547,25 +1521,43 @@ class AstroPlot(Telescope):
         if kwargs['show']:
             plt.show()
 
-        # return data
+        # return
         return f'data:image/png;base64,{base64.b64encode(_data).decode()}'
+
+    # +
+    # (hidden) method: __verify_dict__()
+    # -
+    @staticmethod
+    def __verify_dict__(_dict=None):
+        try:
+            return all(isinstance(_v, (float, str, bool, numpy.ndarray, datetime.datetime)) for _k, _v in _dict.items())
+        except:
+            return False
+
+    # +
+    # (hidden) method: __verify_keys__()
+    # -
+    @staticmethod
+    def __verify_keys__(_dict=None, _keys=None):
+        try:
+            return all(_k in _keys for _k in _dict)
+        except:
+            return False
 
     # +
     # method: plot_airmass()
     # -
     def plot_airmass(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
-                     ndays=AST__NDAYS, save=True, show=True):
+                     ndays=AST__NDAYS, save=True, show=False):
         """ plot airmass """
         try:
             ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
             save = save if isinstance(save, bool) else True
             show = show if isinstance(show, bool) else False
 
-            # get airmass array
+            # get array(s)
             self.__airmass = self.target_airmass_ndays(
                 obs_time=obs_time, obs_name=obs_name, obs_coords=obs_coords, ndays=ndays)
-
-            # separate into time and secz axes
             self.__airmass_time = self.__airmass.obstime[
                 (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
             self.__airmass_secz = self.__airmass.secz[
@@ -1588,12 +1580,12 @@ class AstroPlot(Telescope):
             _time = str(self.__airmass_time[0]).split()[0]
             _payload = {'x_axis': self.__airmass_time.datetime, 'x_label': f'{_time} (UTC)',
                         'x_min': self.__airmass_time.datetime[0], 'x_max': self.__airmass_time.datetime[-1],
-                        'y_axis': self.__airmass_secz, 'z_axis': np.array(self.__airmass_az),
+                        'y_axis': self.__airmass_secz, 'z_axis': numpy.array(self.__airmass_az),
                         'y_min': self.min_airmass, 'y_max': self.max_airmass, 'zp_min': 2.0,
                         'y_label': f'Airmass ({OBS_PROPORTIONAL} secZ)', 'zp_max': 2.0, 'y_invert': True,
                         'title': f'{_title}', 'show': show, 'file': f'{_file}' if save else ''}
-            _data = {**PLOT_ALTAZ, **_payload}
-            if self.__verify_keys__(_data, PLOT_ALTAZ.keys()) and self.__verify_dict__(_data):
+            _data = {**AST__PLOT__ALTAZ, **_payload}
+            if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
                 return self.__plot_altaz__(**_data)
             else:
                 return None
@@ -1601,15 +1593,95 @@ class AstroPlot(Telescope):
             return None
 
     # +
+    # method: plot_all_altaz()
+    # -
+    def plot_all_altaz(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
+                       ndays=AST__NDAYS, save=True, show=False):
+        """ plot moon, sun and target altaz """
+
+        # get default(s)
+        ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
+        save = save if isinstance(save, bool) else True
+        show = show if isinstance(show, bool) else False
+
+        # get array(s)
+        self.__moon = self.moon_altaz_ndays(obs_time=obs_time, ndays=ndays)
+        self.__moon_time = self.__moon.obstime
+        self.__moon_alt = self.__moon.alt
+        self.__moon_az = self.__moon.az
+
+        self.__sun = self.sun_altaz_ndays(obs_time=obs_time, ndays=ndays)
+        self.__sun_time = self.__sun.obstime
+        self.__sun_alt = self.__sun.alt
+        self.__sun_az = self.__sun.az
+
+        self.__target = self.target_altaz_ndays(
+            obs_time=obs_time, obs_name=obs_name, obs_coords=obs_coords, ndays=ndays)
+        self.__target_time = self.__target.obstime
+        self.__target_alt = self.__target.alt
+        self.__target_az = self.__target.az
+
+        # create label(s)
+        _ra_d, _dec_d = self.coords.ra.degree, self.coords.dec.degree
+        _ra_s, _dec_s = ra_from_decimal(_ra_d), dec_from_decimal(_dec_d)
+        _ra_l = _ra_s.replace(':', '').replace('.', '').strip()[:6]
+        _dec_l = _dec_s.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
+        _file = f'plot_{_ra_l}_{_dec_l}.png'
+        _title = f"{obs_name} RA={_ra_s[:10]}, Dec={_dec_s[:11]}\n" \
+                 f"(RA={_ra_d:.3f}{OBS_DEGREE}, Dec={_dec_d:.3f}{OBS_DEGREE})"
+
+        # plot data
+        _now = Time(get_isot(0, True))
+        _time = str(self.__target_time[0]).split()[0]
+        fig, ax = plt.subplots()
+        _ax_scatter = ax.plot(self.__moon_time.datetime, self.__moon_alt.degree, 'g--', label='Moon')
+        _ax_scatter = ax.plot(self.__sun_time.datetime, self.__sun_alt.degree, 'r--', label='Sun')
+        _ax_scatter = ax.scatter(self.__target_time.datetime, self.__target_alt.degree,
+                                 c=numpy.array(self.__target_az.degree), lw=0, s=8, cmap='viridis')
+        ax.plot([_now.datetime, _now.datetime], [self.astronomical_dawn, 90.0], 'orange')
+        ax.plot([self.__target_time.datetime[0], self.__target_time.datetime[-1]], [0.0, 0.0], 'black')
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+        plt.gcf().autofmt_xdate()
+        plt.colorbar(_ax_scatter, ax=ax).set_label(f'Azimuth ({OBS_DEGREE})')
+        ax.set_ylim([self.astronomical_dawn, 90.0])
+        ax.set_xlim([self.__target_time.datetime[0], self.__target_time.datetime[-1]])
+        ax.set_title(f'{_title}')
+        ax.set_ylabel(f'Altitude ({OBS_DEGREE})')
+        ax.set_xlabel(f'{_time} (UTC)')
+        plt.legend(loc='upper left')
+        plt.fill_between(self.__target_time.datetime, self.astronomical_dawn*u.deg, 90.0*u.deg,
+                         self.__sun_alt < 0.0*u.deg, color='0.80', zorder=0)
+        plt.fill_between(self.__target_time.datetime, self.astronomical_dawn*u.deg, 90.0*u.deg,
+                         self.__sun_alt < self.civil_dawn*u.deg, color='0.60', zorder=0)
+        plt.fill_between(self.__target_time.datetime, self.astronomical_dawn*u.deg, 90.0*u.deg,
+                         self.__sun_alt < self.nautical_dawn*u.deg, color='0.40', zorder=0)
+        plt.fill_between(self.__target_time.datetime, self.astronomical_dawn*u.deg, 90.0*u.deg,
+                         self.__sun_alt < self.astronomical_dawn*u.deg, color='0.20', zorder=0)
+
+        # save
+        _buf = io.BytesIO()
+        if save:
+            plt.savefig(f'{_file}')
+            plt.savefig(_buf, format='png', dpi=100)
+        _data = _buf.getvalue()
+
+        # show
+        if show:
+            plt.show()
+
+        # return
+        return f'data:image/png;base64,{base64.b64encode(_data).decode()}'
+
+    # +
     # method: plot_moon_altaz()
     # -
-    def plot_moon_altaz(self, obs_time=Time(get_isot(0, True)), ndays=AST__NDAYS, save=True, show=True):
+    def plot_moon_altaz(self, obs_time=Time(get_isot(0, True)), ndays=AST__NDAYS, save=True, show=False):
         """ plot lunar altaz """
         try:
             # get default(s)
             ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
             save = save if isinstance(save, bool) else True
-            show = show if isinstance(show, bool) else True
+            show = show if isinstance(show, bool) else False
 
             # get array(s)
             self.__moon = self.moon_altaz_ndays(obs_time=obs_time, ndays=ndays)
@@ -1621,10 +1693,10 @@ class AstroPlot(Telescope):
             _time = str(self.__moon_time[0]).split()[0]
             _payload = {'x_axis': self.__moon_time.datetime, 'x_label': f'{_time} (UTC)',
                         'x_min': self.__moon_time.datetime[0], 'x_max': self.__moon_time.datetime[-1],
-                        'y_axis': self.__moon_alt.degree, 'z_axis': np.array(self.__moon_az.degree),
+                        'y_axis': self.__moon_alt.degree, 'z_axis': numpy.array(self.__moon_az.degree),
                         'title': 'Moon', 'show': show, 'file': 'plot_moon.png' if save else ''}
-            _data = {**PLOT_ALTAZ, **_payload}
-            if self.__verify_keys__(_data, PLOT_ALTAZ.keys()) and self.__verify_dict__(_data):
+            _data = {**AST__PLOT__ALTAZ, **_payload}
+            if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
                 return self.__plot_altaz__(**_data)
             else:
                 return None
@@ -1634,13 +1706,13 @@ class AstroPlot(Telescope):
     # +
     # method: plot_sun_altaz()
     # -
-    def plot_sun_altaz(self, obs_time=Time(get_isot(0, True)), ndays=AST__NDAYS, save=True, show=True):
+    def plot_sun_altaz(self, obs_time=Time(get_isot(0, True)), ndays=AST__NDAYS, save=True, show=False):
         """ plot solar altaz """
         try:
             # get default(s)
             ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
             save = save if isinstance(save, bool) else True
-            show = show if isinstance(show, bool) else True
+            show = show if isinstance(show, bool) else False
 
             # get array(s)
             self.__sun = self.sun_altaz_ndays(obs_time=obs_time, ndays=ndays)
@@ -1649,13 +1721,13 @@ class AstroPlot(Telescope):
             self.__sun_az = self.__sun.az
 
             # return data
-            _time = str(self.__airmass_time[0]).split()[0]
+            _time = str(self.__sun_time[0]).split()[0]
             _payload = {'x_axis': self.__sun_time.datetime, 'x_label': f'{_time} (UTC)',
                         'x_min': self.__sun_time.datetime[0], 'x_max': self.__sun_time.datetime[-1],
-                        'y_axis': self.__sun_alt.degree, 'z_axis': np.array(self.__sun_az.degree),
+                        'y_axis': self.__sun_alt.degree, 'z_axis': numpy.array(self.__sun_az.degree),
                         'title': 'Sun', 'show': show, 'file': 'plot_sun.png' if save else ''}
-            _data = {**PLOT_ALTAZ, **_payload}
-            if self.__verify_keys__(_data, PLOT_ALTAZ.keys()) and self.__verify_dict__(_data):
+            _data = {**AST__PLOT__ALTAZ, **_payload}
+            if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
                 return self.__plot_altaz__(**_data)
             else:
                 return None
@@ -1666,7 +1738,7 @@ class AstroPlot(Telescope):
     # method: plot_target_altaz()
     # -
     def plot_target_altaz(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
-                          ndays=AST__NDAYS, save=True, show=True):
+                          ndays=AST__NDAYS, save=True, show=False):
         """ plot target altaz """
         try:
             # get default(s)
@@ -1694,10 +1766,10 @@ class AstroPlot(Telescope):
             _time = str(self.__target_time[0]).split()[0]
             _payload = {'x_axis': self.__target_time.datetime, 'x_label': f'{_time} (UTC)',
                         'x_min': self.__target_time.datetime[0], 'x_max': self.__target_time.datetime[-1],
-                        'y_axis': self.__target_alt.degree, 'z_axis': np.array(self.__target_az.degree),
+                        'y_axis': self.__target_alt.degree, 'z_axis': numpy.array(self.__target_az.degree),
                         'title': f'{_title}', 'show': show, 'file': f'{_file}' if save else ''}
-            _data = {**PLOT_ALTAZ, **_payload}
-            if self.__verify_keys__(_data, PLOT_ALTAZ.keys()) and self.__verify_dict__(_data):
+            _data = {**AST__PLOT__ALTAZ, **_payload}
+            if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
                 return self.__plot_altaz__(**_data)
             else:
                 return None

@@ -45,8 +45,7 @@ def test_telescope_1():
     _val_t = _tel.sun_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True))
     _val_f = _tel.sun_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False))
     # noinspection PyUnresolvedReferences
-    assert all(isinstance(_k, astropy.coordinates.sky_coordinate.SkyCoord)
-              for _k in [_val_t, _val_f])
+    assert all(isinstance(_k, astropy.coordinates.sky_coordinate.SkyCoord) for _k in [_val_t, _val_f])
 
 
 def test_telescope_2():

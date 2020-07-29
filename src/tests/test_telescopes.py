@@ -648,13 +648,6 @@ def test_telescope_193():
 
 
 def test_telescope_194():
-    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
-    _val_t = _tel.target_airmass(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
-    _val_f = _tel.target_airmass(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
-    assert all(-360.0 <= _k <= 360.0 for _k in [_val_t, _val_f])
-
-
-def test_telescope_195():
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.choice(['-', '+'])}{_dec}"
@@ -664,7 +657,7 @@ def test_telescope_195():
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
-def test_telescope_196():
+def test_telescope_195():
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.choice(['-', '+'])}{_dec}"
@@ -697,18 +690,10 @@ def test_telescope_203():
     _ndays = random.randint(1, 5)
     _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
     _val = _tel.target_airmass_ndays(obs_name=_t1, ndays=_ndays)
-    assert isinstance(_val[_num], float)
+    assert (-360.0 <= _val[_num].az.value <= 360.0)
 
 
 def test_telescope_204():
-    _num = random.randint(1, AST__5__MINUTES - 1)
-    _ndays = random.randint(1, 5)
-    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
-    _val = _tel.target_airmass_ndays(obs_name=_t1, ndays=_ndays)
-    assert (-360.0 <= _val[_num] <= 360.0)
-
-
-def test_telescope_205():
     _num = random.randint(1, AST__5__MINUTES - 1)
     _ndays = random.randint(1, 5)
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
@@ -716,7 +701,7 @@ def test_telescope_205():
     _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
     _val = _tel.target_airmass_ndays(obs_coords=_coords, ndays=_ndays)
-    assert isinstance(_val[_num], float)
+    assert all(isinstance(_k, float) for _k in [_val[_num].az.degree, _val[_num].secz.value])
 
 
 def test_telescope_206():
@@ -727,7 +712,7 @@ def test_telescope_206():
     _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
     _val = _tel.target_airmass_ndays(obs_coords=_coords, ndays=_ndays)
-    assert (-360.0 <= _val[_num] <= 360.0)
+    assert (-360.0 <= _val[_num].az.value <= 360.0)
 
 
 # +
@@ -789,14 +774,14 @@ def test_telescope_222():
     _num = random.randint(1, AST__5__MINUTES - 1)
     _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
     _val = _tel.target_airmass_today(obs_name=_t1)
-    assert isinstance(_val[_num], float)
+    assert isinstance(_val[_num].az.value, float)
 
 
 def test_telescope_223():
     _num = random.randint(1, AST__5__MINUTES - 1)
     _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
     _val = _tel.target_airmass_today(obs_name=_t1)
-    assert (-360.0 <= _val[_num] <= 360.0)
+    assert (-360.0 <= _val[_num].az.value <= 360.0)
 
 
 def test_telescope_224():
@@ -806,35 +791,319 @@ def test_telescope_224():
     _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
     _val = _tel.target_airmass_today(obs_coords=_coords)
-    assert isinstance(_val[_num], float)
+    assert isinstance(_val[_num].az.degree, float)
 
 
-def test_telescope_225():
+# +
+# Telescope().target_altaz(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='')
+# -
+def test_telescope_230():
+    assert all(_tel.target_altaz(obs_time=_k) is None for _k in INVALID_INPUTS)
+
+
+def test_telescope_231():
+    assert all(_tel.target_altaz(obs_name=_k) is None for _k in INVALID_INPUTS)
+
+
+def test_telescope_232():
+    assert all(_tel.target_altaz(obs_coords=_k) is None for _k in INVALID_INPUTS)
+
+
+def test_telescope_233():
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
+    _val_f = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
+    # noinspection PyUnresolvedReferences
+    assert all(isinstance(_k, astropy.coordinates.sky_coordinate.SkyCoord) for _k in [_val_t, _val_f])
+
+
+def test_telescope_234():
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
+    _val_f = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
+    assert all(isinstance(_k, float) for _k in [_val_t.alt.value, _val_t.az.value, _val_f.alt.value, _val_f.az.value])
+
+
+def test_telescope_235():
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
+    _val_f = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
+    assert all(-90.0 <= _k <= 90.0 for _k in [_val_t.alt.value, _val_f.alt.value])
+
+
+def test_telescope_236():
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_name=_t1)
+    _val_f = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_name=_t1)
+    assert all(-360.0 <= _k <= 360.0 for _k in [_val_t.az.value, _val_f.az.value])
+
+
+def test_telescope_237():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_coords=_coords)
+    _val_f = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_coords=_coords)
+    # noinspection PyUnresolvedReferences
+    assert all(isinstance(_k, astropy.coordinates.sky_coordinate.SkyCoord) for _k in [_val_t, _val_f])
+
+
+def test_telescope_238():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_coords=_coords)
+    _val_f = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_coords=_coords)
+    assert all(isinstance(_k, float) for _k in [_val_t.alt.value, _val_t.az.value, _val_f.alt.value, _val_f.az.value])
+
+
+def test_telescope_239():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_coords=_coords)
+    _val_f = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_coords=_coords)
+    assert all(-90.0 <= _k <= 90.0 for _k in [_val_t.alt.value, _val_f.alt.value])
+
+
+def test_telescope_23a():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), obs_coords=_coords)
+    _val_f = _tel.target_altaz(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), obs_coords=_coords)
+    assert all(-360.0 <= _k <= 360.0 for _k in [_val_t.az.value, _val_f.az.value])
+
+
+# +
+# Telescope().target_altaz_ndays(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='', ndays=AST__NDAYS)
+# -
+def test_telescope_240():
+    _ndays = random.randint(1, 5)
+    assert all(_tel.target_altaz_ndays(obs_time=_k, ndays=_ndays) is None for _k in INVALID_INPUTS)
+
+
+def test_telescope_241():
+    _ndays = random.randint(1, 5)
+    assert all(_tel.target_altaz_ndays(obs_name=_k, ndays=_ndays) is None for _k in INVALID_INPUTS)
+
+
+def test_telescope_242():
+    _ndays = random.randint(1, 5)
+    assert all(_tel.target_altaz_ndays(obs_coords=_k, ndays=_ndays) is None for _k in INVALID_INPUTS)
+
+
+def test_telescope_243():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True),
+                                     obs_name=_t1, ndays=_ndays)
+    _val_f = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False),
+                                     obs_name=_t1, ndays=_ndays)
+    # noinspection PyUnresolvedReferences
+    assert all(isinstance(_k, astropy.coordinates.sky_coordinate.SkyCoord) for _k in [_val_t[_num], _val_f[_num]])
+
+
+def test_telescope_244():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True),
+                                     obs_name=_t1, ndays=_ndays)
+    _val_f = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False),
+                                     obs_name=_t1, ndays=_ndays)
+    assert all(isinstance(_k, float) for _k in
+               [_val_t[_num].alt.value, _val_t[_num].az.value, _val_f[_num].alt.value, _val_f[_num].az.value])
+
+
+def test_telescope_245():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True),
+                                     obs_name=_t1, ndays=_ndays)
+    _val_f = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False),
+                                     obs_name=_t1, ndays=_ndays)
+    assert all(-90.0 <= _k <= 90.0 for _k in [_val_t[_num].alt.value, _val_f[_num].alt.value])
+
+
+def test_telescope_246():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True),
+                                     obs_name=_t1, ndays=_ndays)
+    _val_f = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False),
+                                     obs_name=_t1, ndays=_ndays)
+    assert all(-360.0 <= _k <= 360.0 for _k in [_val_t[_num].az.value, _val_f[_num].az.value])
+
+
+def test_telescope_247():
+    _ndays = random.randint(1, 5)
     _num = random.randint(1, AST__5__MINUTES - 1)
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
-    _val = _tel.target_airmass_today(obs_coords=_coords)
-    assert (-360.0 <= _val[_num] <= 360.0)
+    _val_t = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True),
+                                     obs_coords=_coords, ndays=_ndays)
+    _val_f = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False),
+                                     obs_coords=_coords, ndays=_ndays)
+    # noinspection PyUnresolvedReferences
+    assert all(isinstance(_k, astropy.coordinates.sky_coordinate.SkyCoord) for _k in [_val_t[_num], _val_f[_num]])
+
+
+def test_telescope_248():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True),
+                                     obs_coords=_coords, ndays=_ndays)
+    _val_f = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False),
+                                     obs_coords=_coords, ndays=_ndays)
+    assert all(isinstance(_k, float) for _k in
+               [_val_t[_num].alt.value, _val_t[_num].az.value, _val_f[_num].alt.value, _val_f[_num].az.value])
+
+
+def test_telescope_249():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True),
+                                     obs_coords=_coords, ndays=_ndays)
+    _val_f = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False),
+                                     obs_coords=_coords, ndays=_ndays)
+    assert all(-90.0 <= _k <= 90.0 for _k in [_val_t[_num].alt.value, _val_f[_num].alt.value])
+
+
+def test_telescope_24a():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True),
+                                     obs_coords=_coords, ndays=_ndays)
+    _val_f = _tel.target_altaz_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False),
+                                     obs_coords=_coords, ndays=_ndays)
+    assert all(-360.0 <= _k <= 360.0 for _k in [_val_t[_num].az.value, _val_f[_num].az.value])
+
+
+# +
+# Telescope().target_altaz_now(self, obs_name='', obs_coords='')
+# -
+def test_telescope_250():
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.target_altaz_now(obs_name=_t1)
+    assert all(isinstance(_k, float) for _k in [_val.alt.value, _val.az.value])
+
+
+def test_telescope_251():
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.target_altaz_now(obs_name=_t1)
+    assert (-90.0 <= _val.alt.value <= 90.0)
+
+
+def test_telescope_252():
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.target_altaz_now(obs_name=_t1)
+    assert (-360.0 <= _val.az.value <= 360.0)
+
+
+def test_telescope_253():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val = _tel.target_altaz_now(obs_coords=_coords)
+    assert (-90.0 <= _val.alt.value <= 90.0)
+
+
+def test_telescope_254():
+    _ndays = random.randint(1, 5)
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val = _tel.target_altaz_now(obs_coords=_coords)
+    assert (-360.0 <= _val.az.value <= 360.0)
+
+
+# +
+# Telescope().target_altaz_today(self, obs_name='', obs_coords='')
+# -
+def test_telescope_260():
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.target_altaz_today(obs_name=_t1)
+    assert all(isinstance(_k, float) for _k in [_val[_num].alt.value, _val[_num].az.value])
+
+
+def test_telescope_261():
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.target_altaz_today(obs_name=_t1)
+    assert (-90.0 <= _val[_num].alt.value <= 90.0)
+
+
+def test_telescope_262():
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _t1 = ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val = _tel.target_altaz_today(obs_name=_t1)
+    assert (-360.0 <= _val[_num].az.value <= 360.0)
+
+
+def test_telescope_263():
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val = _tel.target_altaz_today(obs_coords=_coords)
+    assert (-90.0 <= _val[_num].alt.value <= 90.0)
+
+
+def test_telescope_264():
+    _num = random.randint(1, AST__5__MINUTES - 1)
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _val = _tel.target_altaz_today(obs_coords=_coords)
+    assert (-360.0 <= _val[_num].az.value <= 360.0)
 
 
 # +
 # Telescope().target_rise(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='', which=AST__WHICH[-1], utc=False)
 # -
-def test_telescope_230():
+def test_telescope_270():
     assert all(_tel.target_rise(obs_time=_k) is None for _k in INVALID_INPUTS)
 
 
-def test_telescope_231():
+def test_telescope_271():
     assert all(_tel.target_rise(obs_name=_k) is None for _k in INVALID_INPUTS)
 
 
-def test_telescope_232():
+def test_telescope_272():
     assert all(_tel.target_rise(obs_coords=_k) is None for _k in INVALID_INPUTS)
 
 
-def test_telescope_233():
+def test_telescope_273():
     _d1 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _d2 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _d3 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False)
@@ -852,7 +1121,7 @@ def test_telescope_233():
     assert all(re.match(OBS_ISO_PATTERN, _k) is not None for _k in [_val_1, _val_2, _val_3, _val_4])
 
 
-def test_telescope_234():
+def test_telescope_274():
     _d1 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _m1 = int(_d1.split('T')[0].split('-')[1])
     _val_t = isot_to_jd(_tel.target_rise(obs_time=_d1, obs_name=ZODIAC.get(_m1, 'Polaris'), utc=True))
@@ -860,7 +1129,7 @@ def test_telescope_234():
     assert math.isclose(abs(_val_t - _val_f), abs(_tel.utc_offset/24.0), rel_tol=0.0001)
 
 
-def test_telescope_235():
+def test_telescope_275():
     _d1 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _d2 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _d3 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False)
@@ -888,7 +1157,7 @@ def test_telescope_235():
     assert all(re.match(OBS_ISO_PATTERN, _k) is not None for _k in [_val_1, _val_2, _val_3, _val_4])
 
 
-def test_telescope_236():
+def test_telescope_276():
     _d1 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _m1 = int(_d1.split('T')[0].split('-')[1])
     _t1 = get_astropy_coords(name=ZODIAC.get(_m1, 'Polaris'))
@@ -902,19 +1171,19 @@ def test_telescope_236():
 # +
 # Telescope().target_set()
 # -
-def test_telescope_240():
+def test_telescope_280():
     assert all(_tel.target_set(obs_time=_k) is None for _k in INVALID_INPUTS)
 
 
-def test_telescope_241():
+def test_telescope_281():
     assert all(_tel.target_set(obs_name=_k) is None for _k in INVALID_INPUTS)
 
 
-def test_telescope_242():
+def test_telescope_282():
     assert all(_tel.target_set(obs_coords=_k) is None for _k in INVALID_INPUTS)
 
 
-def test_telescope_243():
+def test_telescope_283():
     _d1 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _d2 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _d3 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False)
@@ -932,7 +1201,7 @@ def test_telescope_243():
     assert all(re.match(OBS_ISO_PATTERN, _k) is not None for _k in [_val_1, _val_2, _val_3, _val_4])
 
 
-def test_telescope_244():
+def test_telescope_284():
     _d1 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _m1 = int(_d1.split('T')[0].split('-')[1])
     _val_t = isot_to_jd(_tel.target_set(obs_time=_d1, obs_name=ZODIAC.get(_m1, 'Polaris'), utc=True))
@@ -940,7 +1209,7 @@ def test_telescope_244():
     assert math.isclose(abs(_val_t - _val_f), abs(_tel.utc_offset/24.0), rel_tol=0.0001)
 
 
-def test_telescope_245():
+def test_telescope_285():
     _d1 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _d2 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _d3 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False)
@@ -968,7 +1237,7 @@ def test_telescope_245():
     assert all(re.match(OBS_ISO_PATTERN, _k) is not None for _k in [_val_1, _val_2, _val_3, _val_4])
 
 
-def test_telescope_246():
+def test_telescope_286():
     _d1 = get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True)
     _m1 = int(_d1.split('T')[0].split('-')[1])
     _t1 = get_astropy_coords(name=ZODIAC.get(_m1, 'Polaris'))
@@ -982,13 +1251,13 @@ def test_telescope_246():
 # +
 # Telescope().tonight(self, obs_time=Time(get_isot(0, True)), utc=False)
 # -
-def test_telescope_250():
+def test_telescope_290():
     _val_t = _tel.tonight(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True))
     _val_f = _tel.tonight(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False))
     assert all(re.match(OBS_ISO_PATTERN, _k) for _k in [_val_t[0], _val_f[0]])
 
 
-def test_telescope_251():
+def test_telescope_291():
     _val_t = _tel.tonight(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True))
     _val_f = _tel.tonight(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False))
     assert all(re.match(OBS_ISO_PATTERN, _k) for _k in [_val_t[1], _val_f[1]])
@@ -997,19 +1266,19 @@ def test_telescope_251():
 # +
 # Telescope().zenith(self, obs_time=Time(get_isot(0, True)))
 # -
-def test_telescope_260():
+def test_telescope_300():
     _val_t = _tel.zenith(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True))
     _val_f = _tel.zenith(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False))
     assert all(isinstance(_k, str) for _k in [_val_t[0], _val_f[0]])
 
 
-def test_telescope_261():
+def test_telescope_301():
     _val_t = _tel.zenith(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True))
     _val_f = _tel.zenith(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False))
     assert all(re.match(OBS_RA_PATTERN, _k) is not None for _k in [_val_t[0], _val_f[0]])
 
 
-def test_telescope_262():
+def test_telescope_302():
     _val_t = _tel.zenith(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True))
     _val_f = _tel.zenith(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False))
     assert all(re.match(OBS_DEC_PATTERN, _k) is not None for _k in [_val_t[1], _val_f[1]])
@@ -1018,17 +1287,17 @@ def test_telescope_262():
 # +
 # Telescope().fm_lunation(self, obs_time=Time(get_isot(0, True)))
 # -
-def test_telescope_270():
+def test_telescope_310():
     assert all(_tel.fm_lunation(obs_time=_k) is math.nan for _k in INVALID_INPUTS)
 
 
-def test_telescope_271():
+def test_telescope_311():
     _val_t = _tel.fm_lunation(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True))
     _val_f = _tel.fm_lunation(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False))
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
-def test_telescope_272():
+def test_telescope_312():
     _val_t = _tel.fm_lunation(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True))
     _val_f = _tel.fm_lunation(obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False))
     assert all(0.0 <= _k <= 30.0 for _k in [_val_t, _val_f])
@@ -1037,11 +1306,11 @@ def test_telescope_272():
 # +
 # Telescope().fm_moon_date(obs_time=get_isot(0, True), which=AST__WHICH[-1], phase=AST__MOON__WHICH[0], utc_offset=0.0)
 # -
-def test_telescope_280():
+def test_telescope_320():
     assert all(_tel.fm_moon_date(obs_time=_k) is None for _k in INVALID_INPUTS)
 
 
-def test_telescope_281():
+def test_telescope_321():
     _val_t = _tel.fm_moon_date(
         obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), utc_offset=_tel.utc_offset)
     _val_f = _tel.fm_moon_date(
@@ -1049,7 +1318,7 @@ def test_telescope_281():
     assert all(re.match(OBS_ISO_PATTERN, _k) for _k in [_val_t, _val_f])
 
 
-def test_telescope_282():
+def test_telescope_322():
     _which = random.choice(AST__WHICH)
     _val_t = _tel.fm_moon_date(
         obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), which=_which, utc_offset=_tel.utc_offset)
@@ -1058,7 +1327,7 @@ def test_telescope_282():
     assert all(re.match(OBS_ISO_PATTERN, _k) for _k in [_val_t, _val_f])
 
 
-def test_telescope_283():
+def test_telescope_323():
     _phase = random.choice(AST__MOON__WHICH)
     _val_t = _tel.fm_moon_date(
         obs_time=get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), phase=_phase, utc_offset=_tel.utc_offset)

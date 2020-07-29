@@ -7,6 +7,7 @@
 from src.telescopes.factory import *
 
 import astropy
+import numpy
 
 
 # +
@@ -321,7 +322,7 @@ def test_telescope_101():
     _val_t = _tel.moon_exclusion_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), ndays=_ndays)
     _val_f = _tel.moon_exclusion_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), ndays=_ndays)
     # noinspection PyUnresolvedReferences
-    assert all(isinstance(_k, np.ndarray) for _k in [_val_t, _val_f])
+    assert all(isinstance(_k, numpy.ndarray) for _k in [_val_t, _val_f])
 
 
 def test_telescope_102():
@@ -405,7 +406,7 @@ def test_telescope_141():
     _val_t = _tel.moon_illumination_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), ndays=_ndays)
     _val_f = _tel.moon_illumination_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), ndays=_ndays)
     # noinspection PyUnresolvedReferences
-    assert all(isinstance(_k, np.ndarray) for _k in [_val_t, _val_f])
+    assert all(isinstance(_k, numpy.ndarray) for _k in [_val_t, _val_f])
 
 
 def test_telescope_142():
@@ -519,7 +520,7 @@ def test_telescope_201():
     _ndays = random.randint(1, 5)
     _val_t = _tel.moon_phase_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), True), ndays=_ndays)
     _val_f = _tel.moon_phase_ndays(get_isot(random.randint(LOWER_BOUND, UPPER_BOUND), False), ndays=_ndays)
-    assert all(isinstance(_k, np.ndarray) for _k in [_val_t, _val_f])
+    assert all(isinstance(_k, numpy.ndarray) for _k in [_val_t, _val_f])
 
 
 def test_telescope_202():
