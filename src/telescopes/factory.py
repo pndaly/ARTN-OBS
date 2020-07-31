@@ -48,7 +48,7 @@ AST__MOON__PHASE = [math.pi, 3.0*math.pi/4.0, math.pi/2.0, math.pi/4.0,
 AST__MOON__WHICH = ['new', 'first quarter', 'full', 'last quarter']
 AST__MOON__STEWARD = ['bright', 'dark', 'grey']
 AST__NDAYS = 1
-AST__PLOT__ALTAZ = {'color_utc': 'yellow', 'color_zero': 'black', 'color_map': 'viridis', 'file': '', 'show': False,
+AST__PLOT__ALTAZ = {'color_utc': 'orange', 'color_zero': 'black', 'color_map': 'viridis', 'file': '', 'show': False,
                     'title': '', 'x_axis': None, 'x_label': '', 'x_min': None, 'x_max': None, 'y_axis': None,
                     'y_invert': False, 'y_label': f'Altitude ({OBS_DEGREE})', 'y_min': -18.0, 'y_max': 90.0,
                     'z_axis': None, 'z_label': f'Azimuth ({OBS_DEGREE})', 'zp_min': 0.0, 'zp_max': 0.0}
@@ -313,13 +313,13 @@ class Telescope(object):
             utc = utc if isinstance(utc, bool) else False
             _jd = math.nan
             self.__convert_time__(obs_time=obs_time)
-            if twilight == 'astronomical':
+            if 'astro' in twilight:
                 _jd = self.__observer.sun_rise_time(
                     self.__time, which=which, horizon=self.__astronomical_dawn * u.degree).jd
-            elif twilight == 'civil':
+            elif 'civil' in twilight:
                 _jd = self.__observer.sun_rise_time(
                     self.__time, which=which, horizon=self.__civil_dawn * u.degree).jd
-            elif twilight == 'nautical':
+            elif 'nauti' in twilight:
                 _jd = self.__observer.sun_rise_time(
                     self.__time, which=which, horizon=self.__nautical_dawn * u.degree).jd
             return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
@@ -337,13 +337,13 @@ class Telescope(object):
             utc = utc if isinstance(utc, bool) else False
             _jd = math.nan
             self.__convert_time__(obs_time=obs_time)
-            if twilight == 'astronomical':
+            if 'astro' in twilight:
                 _jd = self.__observer.sun_set_time(
                     self.__time, which=which, horizon=self.__astronomical_dusk * u.degree).jd
-            elif twilight == 'civil':
+            elif 'civil' in twilight:
                 _jd = self.__observer.sun_set_time(
                     self.__time, which=which, horizon=self.__civil_dusk * u.degree).jd
-            elif twilight == 'nautical':
+            elif 'nauti' in twilight:
                 _jd = self.__observer.sun_set_time(
                     self.__time, which=which, horizon=self.__nautical_dusk * u.degree).jd
             return jd_to_isot(_jd) if utc else jd_to_isot(_jd - abs(self.__utc_offset/24.0))
@@ -353,71 +353,83 @@ class Telescope(object):
     # +
     # method: is_day()
     # -
-    def is_day(self, obs_time=Time(get_isot(0, True))):
+    def is_day(self, obs_time=Time(get_isot(0, True)), horizon=0.0):
         """ returns daytime flag """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return False if self.__observer.is_night(self.__time) else True
+            return False if self.__observer.is_night(self.__time, horizon=horizon*u.deg) else True
         except:
             return None
 
     # +
     # method: is_night()
     # -
-    def is_night(self, obs_time=Time(get_isot(0, True))):
+    def is_night(self, obs_time=Time(get_isot(0, True)), horizon=0.0):
         """ returns nighttime flag """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return self.__observer.is_night(self.__time)
+            return self.__observer.is_night(self.__time, horizon=horizon*u.deg)
         except:
             return None
 
     # +
     # method: is_observable()
     # -
-    def is_observable(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
+    def is_observable(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='', horizon=0.0):
         """ return target observability flag """
         try:
             self.__convert_time__(obs_time=obs_time)
             self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
-            return self.__observer.target_is_up(self.__time, target=self.__coords)
+            if self.sun_alt(self.__time) > horizon:
+                return False
+            else:
+                return self.__observer.target_is_up(self.__time, target=self.__coords, horizon=horizon*u.deg)
         except:
             return None
 
-    # +
-    # method: is_observable_ndays()
-    # -
-    def is_observable_ndays(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='', ndays=AST__NDAYS):
-        """ return target observability flag(s) over ndays """
-        try:
-            ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
-            self.__convert_time__(obs_time=obs_time, ndays=ndays)
-            self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
-            return self.__observer.target_is_up(self.__time, target=self.__coords)
-        except:
-            return None
-
-    # +
-    # method: is_observable_now()
-    # -
-    def is_observable_now(self, obs_name='', obs_coords=''):
-        """ returns target observability flag now """
-        try:
-            return self.is_observable_ndays(obs_time=f'{get_isot(0, True)}', obs_name=obs_name,
-                                            obs_coords=obs_coords, ndays=1)[0]
-        except:
-            return None
-
-    # +
-    # method: is_observable_today()
-    # -
-    def is_observable_today(self, obs_name='', obs_coords=''):
-        """ returns target observability flag(s) today """
-        try:
-            return self.is_observable_ndays(obs_time=f"{get_isot(0, False).split('T')[0]}T00:00:00.000000",
-                                            obs_name=obs_name, obs_coords=obs_coords, ndays=1)
-        except:
-            return None
+    # # +
+    # # method: is_observable_ndays()
+    # # -
+    # def is_observable_ndays(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
+    #                         ndays=AST__NDAYS, horizon=0.0):
+    #     """ return target observability flag(s) over ndays as a dictionary """
+    #     try:
+    #         ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
+    #         _s = self.sun_altaz_ndays(obs_time=obs_time, ndays=ndays)
+    #         _t = self.target_altaz_ndays(obs_name=obs_name, obs_coords=obs_coords, ndays=ndays)
+    #         _vis = _t[(_s.alt < 0.0*u.deg) & (_t.alt > 0.0*u.deg)]
+    #         _nov = _t[(_s.alt < 0.0*u.deg) | (_t.alt < 0.0*u.deg)]
+    #         # _x = _t[_s.alt < horizon*u.deg]
+    #         # _v = _t[_s.alt > horizon*u.deg]
+    #         # _y = _x.obstime[_x.alt > horizon*u.deg]
+    #         # return numpy.array(list({_k.isot: True for _k in _y}.items()))
+    #         return {_k.isot: (True if (_s.alt > horizon*u.deg and _t.alt > horizon*u.deg) else False)
+    #                 for _k in _t.obstime}
+    #         # return numpy.array(list(_a.item()))
+    #     except:
+    #         return None
+    #
+    # # +
+    # # method: is_observable_now()
+    # # -
+    # def is_observable_now(self, obs_name='', obs_coords=''):
+    #     """ returns target observability flag now """
+    #     try:
+    #         return self.is_observable_ndays(obs_time=f'{get_isot(0, True)}', obs_name=obs_name,
+    #                                         obs_coords=obs_coords, ndays=1)[0]
+    #     except:
+    #         return None
+    #
+    # # +
+    # # method: is_observable_today()
+    # # -
+    # def is_observable_today(self, obs_name='', obs_coords=''):
+    #     """ returns target observability flag(s) today """
+    #     try:
+    #         return self.is_observable_ndays(obs_time=f"{get_isot(0, False).split('T')[0]}T00:00:00.000000",
+    #                                         obs_name=obs_name, obs_coords=obs_coords, ndays=1)
+    #     except:
+    #         return None
 
     # +
     # function: lst()
@@ -523,7 +535,7 @@ class Telescope(object):
         """ returns lunar alt """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return self.__observer.moon_altaz(self.__time).alt.value
+            return self.moon_altaz(self.__time).alt.value
         except:
             return math.nan
 
@@ -534,7 +546,7 @@ class Telescope(object):
         """ returns lunar az """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return self.__observer.moon_altaz(self.__time).az.value
+            return self.moon_altaz(self.__time).az.value
         except:
             return math.nan
 
@@ -598,37 +610,37 @@ class Telescope(object):
         try:
             _date = isot_to_ephem(obs_time)
             _jd = isot_to_jd(obs_time)
-            if which == 'nearest' and phase == 'new':
+            if 'near' in which and 'new' in phase:
                 _nnm = isot_to_jd(ephem_to_isot(ephem.next_new_moon(_date)))
                 _pnm = isot_to_jd(ephem_to_isot(ephem.previous_new_moon(_date)))
                 _ans = _nnm if ((_jd - _pnm) > (_nnm - _jd)) else _pnm
-            elif which == 'nearest' and phase == 'first quarter':
+            elif 'near' in which and 'first' in phase:
                 _nfqm = isot_to_jd(ephem_to_isot(ephem.next_first_quarter_moon(_date)))
                 _pfqm = isot_to_jd(ephem_to_isot(ephem.previous_first_quarter_moon(_date)))
                 _ans = _nfqm if ((_jd - _pfqm) > (_nfqm - _jd)) else _pfqm
-            elif which == 'nearest' and phase == 'full':
+            elif 'near' in which and 'full' in phase:
                 _nfm = isot_to_jd(ephem_to_isot(ephem.next_full_moon(_date)))
                 _pfm = isot_to_jd(ephem_to_isot(ephem.previous_full_moon(_date)))
                 _ans = _nfm if ((_jd - _pfm) > (_nfm - _jd)) else _pfm
-            elif which == 'nearest' and phase == 'last quarter':
+            elif 'near' in which and 'last' in phase:
                 _nlqm = isot_to_jd(ephem_to_isot(ephem.next_last_quarter_moon(_date)))
                 _plqm = isot_to_jd(ephem_to_isot(ephem.previous_last_quarter_moon(_date)))
                 _ans = _nlqm if ((_jd - _plqm) > (_nlqm - _jd)) else _plqm
-            elif which == 'next' and phase == 'new':
+            elif 'next' in which and 'new' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.next_new_moon(_date)))
-            elif which == 'next' and phase == 'first quarter':
+            elif 'next' in which and 'first quarter' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.next_first_quarter_moon(_date)))
-            elif which == 'next' and phase == 'full':
+            elif 'next' in which and 'full' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.next_full_moon(_date)))
-            elif which == 'next' and phase == 'last quarter':
+            elif 'next' in which and 'last' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.next_last_quarter_moon(_date)))
-            elif which == 'previous' and phase == 'new':
+            elif 'prev' in which and 'new' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_new_moon(_date)))
-            elif which == 'previous' and phase == 'first quarter':
+            elif 'prev' in which and 'first' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_first_quarter_moon(_date)))
-            elif which == 'previous' and phase == 'full':
+            elif 'prev' in which and 'full' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_full_moon(_date)))
-            elif which == 'previous' and phase == 'last quarter':
+            elif 'prev' in which and 'last' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_last_quarter_moon(_date)))
             return jd_to_isot(_ans) if utc else jd_to_isot(_ans - abs(self.__utc_offset/24.0))
         except:
@@ -642,7 +654,7 @@ class Telescope(object):
         """ returns lunar distance """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return self.__observer.moon_altaz(self.__time).distance.value
+            return self.moon_altaz(self.__time).distance.value
         except:
             return math.nan
 
@@ -743,7 +755,7 @@ class Telescope(object):
         """ returns flag for moon above horizon """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return self.__observer.moon_alt(self.__time) > horizon
+            return self.moon_alt(self.__time) > float(horizon)
         except:
             return None
 
@@ -754,7 +766,7 @@ class Telescope(object):
         """ returns flag for moon below horizon """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return self.__observer.moon_alt(self.__time) < horizon
+            return self.moon_alt(self.__time) < float(horizon)
         except:
             return None
 
@@ -1082,7 +1094,7 @@ class Telescope(object):
         """ returns solar alt """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return self.__observer.sun_altaz(self.__time).alt.value
+            return self.sun_altaz(self.__time).alt.value
         except:
             return math.nan
 
@@ -1093,7 +1105,18 @@ class Telescope(object):
         """ returns solar az """
         try:
             self.__convert_time__(obs_time=obs_time)
-            return self.__observer.sun_altaz(self.__time).az.value
+            return self.sun_altaz(self.__time).az.value
+        except:
+            return math.nan
+
+    # +
+    # method: sun_distance()
+    # -
+    def sun_distance(self, obs_time=Time(get_isot(0, True))):
+        """ returns solar distance """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.sun_altaz(self.__time).distance.value
         except:
             return math.nan
 
@@ -1316,6 +1339,28 @@ class Telescope(object):
             return None
 
     # +
+    # method: target_alt()
+    # -
+    def target_alt(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
+        """ returns target alt """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.target_altaz(self.__time, obs_name=obs_name, obs_coords=obs_coords).alt.value
+        except:
+            return math.nan
+
+    # +
+    # method: target_az()
+    # -
+    def target_az(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
+        """ returns target az """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.target_altaz(self.__time, obs_name=obs_name, obs_coords=obs_coords).az.value
+        except:
+            return math.nan
+
+    # +
     # method: target_rise()
     # -
     def target_rise(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='', which=AST__WHICH[-1], utc=False):
@@ -1405,37 +1450,37 @@ class Telescope(object):
         try:
             _date = isot_to_ephem(obs_time)
             _jd = isot_to_jd(obs_time)
-            if which == 'nearest' and phase == 'new':
+            if 'near' in which and 'new' in phase:
                 _nnm = isot_to_jd(ephem_to_isot(ephem.next_new_moon(_date)))
                 _pnm = isot_to_jd(ephem_to_isot(ephem.previous_new_moon(_date)))
                 _ans = _nnm if ((_jd - _pnm) > (_nnm - _jd)) else _pnm
-            elif which == 'nearest' and phase == 'first quarter':
+            elif 'near' in which and 'first' in phase:
                 _nfqm = isot_to_jd(ephem_to_isot(ephem.next_first_quarter_moon(_date)))
                 _pfqm = isot_to_jd(ephem_to_isot(ephem.previous_first_quarter_moon(_date)))
                 _ans = _nfqm if ((_jd - _pfqm) > (_nfqm - _jd)) else _pfqm
-            elif which == 'nearest' and phase == 'full':
+            elif 'near' in which and 'full' in phase:
                 _nfm = isot_to_jd(ephem_to_isot(ephem.next_full_moon(_date)))
                 _pfm = isot_to_jd(ephem_to_isot(ephem.previous_full_moon(_date)))
                 _ans = _nfm if ((_jd - _pfm) > (_nfm - _jd)) else _pfm
-            elif which == 'nearest' and phase == 'last quarter':
+            elif 'near' in which and 'last' in phase:
                 _nlqm = isot_to_jd(ephem_to_isot(ephem.next_last_quarter_moon(_date)))
                 _plqm = isot_to_jd(ephem_to_isot(ephem.previous_last_quarter_moon(_date)))
                 _ans = _nlqm if ((_jd - _plqm) > (_nlqm - _jd)) else _plqm
-            elif which == 'next' and phase == 'new':
+            elif 'next' in which and 'new' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.next_new_moon(_date)))
-            elif which == 'next' and phase == 'first quarter':
+            elif 'next' in which and 'first' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.next_first_quarter_moon(_date)))
-            elif which == 'next' and phase == 'full':
+            elif 'next' in which and 'full' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.next_full_moon(_date)))
-            elif which == 'next' and phase == 'last quarter':
+            elif 'next' in which and 'last' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.next_last_quarter_moon(_date)))
-            elif which == 'previous' and phase == 'new':
+            elif 'prev' in which and 'new' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_new_moon(_date)))
-            elif which == 'previous' and phase == 'first quarter':
+            elif 'prev' in which and 'first' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_first_quarter_moon(_date)))
-            elif which == 'previous' and phase == 'full':
+            elif 'prev' in which and 'full' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_full_moon(_date)))
-            elif which == 'previous' and phase == 'last quarter':
+            elif 'prev' in which and 'last' in phase:
                 _ans = isot_to_jd(ephem_to_isot(ephem.previous_last_quarter_moon(_date)))
             return jd_to_isot(_ans - abs(utc_offset/24.0))
         except:
@@ -1694,7 +1739,7 @@ class AstroPlot(Telescope):
             _payload = {'x_axis': self.__moon_time.datetime, 'x_label': f'{_time} (UTC)',
                         'x_min': self.__moon_time.datetime[0], 'x_max': self.__moon_time.datetime[-1],
                         'y_axis': self.__moon_alt.degree, 'z_axis': numpy.array(self.__moon_az.degree),
-                        'title': 'Moon', 'show': show, 'file': 'plot_moon.png' if save else ''}
+                        'title': f'Moon\n({self.aka})', 'show': show, 'file': 'plot_moon.png' if save else ''}
             _data = {**AST__PLOT__ALTAZ, **_payload}
             if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
                 return self.__plot_altaz__(**_data)
@@ -1725,7 +1770,7 @@ class AstroPlot(Telescope):
             _payload = {'x_axis': self.__sun_time.datetime, 'x_label': f'{_time} (UTC)',
                         'x_min': self.__sun_time.datetime[0], 'x_max': self.__sun_time.datetime[-1],
                         'y_axis': self.__sun_alt.degree, 'z_axis': numpy.array(self.__sun_az.degree),
-                        'title': 'Sun', 'show': show, 'file': 'plot_sun.png' if save else ''}
+                        'title': f'Sun\n({self.aka})', 'show': show, 'file': 'plot_sun.png' if save else ''}
             _data = {**AST__PLOT__ALTAZ, **_payload}
             if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
                 return self.__plot_altaz__(**_data)

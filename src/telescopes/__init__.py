@@ -14,7 +14,7 @@ import pytz
 # -
 TEL__NODES = {
     'Bok': {
-        'aka': 'Bok 90-inch',
+        'aka': 'Bok 90-inch, Kitt Peak, AZ',
         'altitude': 6795.8 / 3.28083,
         'civil_dawn': -6.0,
         'nautical_dawn': -12.0,
@@ -43,7 +43,7 @@ TEL__NODES = {
         'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
     },
     'Kuiper': {
-        'aka': 'Kuiper 61-inch',
+        'aka': 'Kuiper 61-inch, Mount Bigelow, AZ',
         'altitude': 8235.0 / 3.28083,
         'civil_dawn': -6.0,
         'nautical_dawn': -12.0,
@@ -72,7 +72,7 @@ TEL__NODES = {
         'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
     },
     'MMT': {
-        'aka': 'MMT 6.5m',
+        'aka': 'MMT 6.5m, Mount Hopkins, AZ',
         'altitude': 8585.0 / 3.28083,
         'civil_dawn': -6.0,
         'nautical_dawn': -12.0,
@@ -101,7 +101,7 @@ TEL__NODES = {
         'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
     },
     'Vatt': {
-        'aka': 'Vatt 1.8-metre',
+        'aka': 'Vatt 1.8-metre, Mount Graham, AZ',
         'altitude': 10469.0 / 3.28083,
         'civil_dawn': -6.0,
         'nautical_dawn': -12.0,
@@ -130,7 +130,7 @@ TEL__NODES = {
         'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
     },
     'Steward': {
-        'aka': 'Raymond White 21-inch',
+        'aka': 'Raymond White 21-inch, Tucson, AZ',
         'altitude': 0.0 / 3.28083,
         'civil_dawn': -6.0,
         'nautical_dawn': -12.0,
@@ -157,6 +157,35 @@ TEL__NODES = {
         'instruments': [],
         'timezone': pytz.timezone('America/Phoenix'),
         'utc_offset': datetime.now(pytz.timezone('America/Phoenix')).utcoffset().total_seconds()/60.0/60.0
+    },
+    'Greenwich': {
+        'aka': "Airy's Transit Circle, Greenwich, UK",
+        'altitude': 0.0 / 3.28083,
+        'civil_dawn': -6.0,
+        'nautical_dawn': -12.0,
+        'astronomical_dawn': -18.0,
+        'civil_dusk': -6.0,
+        'nautical_dusk': -12.0,
+        'astronomical_dusk': -18.0,
+        'declination_limit': 60.0,
+        'dome_slew_rate': 1.0,
+        'elevation': 0.0,
+        'focal_length_m': 3.5,
+        'focal_length_ft': 1.0 * 3.28083,
+        'latitude': 51.477754,
+        'longitude': -0.001138,
+        'max_airmass': 2.5,
+        'max_moon_exclusion': 25.0,
+        'primary_imperial': 8.1,
+        'primary_metric': 0.20574,
+        'min_airmass': 1.0,
+        'min_moon_exclusion': 2.5,
+        'name': 'rgo',
+        'mount': 'Alt-Az',
+        'telescope_slew_rate': 1.0,
+        'instruments': [],
+        'timezone': pytz.timezone('Greenwich'),
+        'utc_offset': datetime.now(pytz.timezone('Greenwich')).utcoffset().total_seconds()/60.0/60.0
     }
 }
 

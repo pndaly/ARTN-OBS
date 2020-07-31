@@ -455,7 +455,7 @@ def test_telescope_161():
 # Telescope().moon_is_up(self, obs_time=Time(get_isot(0, True)), horizon=0*u.deg)
 # -
 def test_telescope_170():
-    assert all(_tel.moon_is_up(obs_time=_k) is None for _k in INVALID_INPUTS)
+    assert all(_tel.moon_is_up(obs_time=_k) in [True, False, None] for _k in INVALID_INPUTS)
 
 
 def test_telescope_171():
@@ -474,7 +474,7 @@ def test_telescope_173():
 # Telescope().moon_is_down(self, obs_time=Time(get_isot(0, True)), horizon=0*u.deg)
 # -
 def test_telescope_180():
-    assert all(_tel.moon_is_down(obs_time=_k) is None for _k in INVALID_INPUTS)
+    assert all(_tel.moon_is_down(obs_time=_k) in [True, False, None] for _k in INVALID_INPUTS)
 
 
 def test_telescope_181():

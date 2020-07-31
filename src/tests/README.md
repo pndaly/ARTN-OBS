@@ -3,6 +3,7 @@
 Before performing the tests, make sure your database is up and running!
 
 ```bash
+   % source etc/OBS.sh `pwd` load
    % python3.7 -m pytest -p no:warnings test_darks.py
    % python3.7 -m pytest -p no:warnings test_flats.py
    % python3.7 -m pytest -p no:warnings test_foci.py
