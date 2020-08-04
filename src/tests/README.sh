@@ -10,4 +10,5 @@ python3.7 -m pytest -p no:warnings test_non_sidereal.py
 python3.7 -m pytest -p no:warnings test_sidereal.py
 python3.7 -m pytest -p no:warnings test_telescopes.py
 python3.7 -m pytest -p no:warnings test_telescopes_moon.py
+python3.7 -m pytest -p no:warnings test_telescopes_plot.py
 python3.7 -m pytest -p no:warnings test_telescopes_sun.py

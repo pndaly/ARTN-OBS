@@ -64,6 +64,9 @@ OBS_TIMEZONE = pytz.timezone('America/Phoenix')
 OBS_TRUE_VALUES = [1, True, '1', 'true', 't', 'TRUE', 'T']
 OBS_UTC_OFFSET = datetime.now(OBS_TIMEZONE).utcoffset().total_seconds()/60.0/60.0
 OBS_ZERO_NID = '2019-01-01T00:00:00.000000'
+OBS_ZODIAC = {1: 'Alpha Capricorni', 2: 'Alpha Aquarii', 3: 'Alpha Piscium', 4: 'Alpha Arietis', 5: 'Alpha Tauri',
+              6: 'Alpha Geminorum', 7: 'Alpha Cancri', 8: 'Alpha Leonis', 9: 'Alpha Virginis', 10: 'Alpha Librae',
+              11: 'Alpha Scorpii', 12: 'Alpha Sagittarii'}
 
 
 # +
