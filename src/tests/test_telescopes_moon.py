@@ -4,7 +4,7 @@
 # +
 # import(s)
 # -
-from . import *
+from src.tests import *
 from src.telescopes.factory import *
 
 import astropy
@@ -349,44 +349,44 @@ def test_telescope_113():
 
 
 # +
-# Telescope().moon_is_up(self, obs_time=Time(get_isot(0, True)), horizon=0*u.deg)
+# Telescope().moon_is_down(self, obs_time=Time(get_isot(0, True)), horizon=0*u.deg)
 # -
 def test_telescope_120():
-    assert all(_tel.moon_is_up(obs_time=_k) in [True, False, None] for _k in TEST_INVALID_INPUTS)
+    assert all(_tel.moon_is_down(obs_time=_k) in [True, False, None] for _k in TEST_INVALID_INPUTS)
 
 
 def test_telescope_121():
-    assert all(_tel.moon_is_up(horizon=_k) is None for _k in TEST_INVALID_INPUTS[:-2])
+    assert all(_tel.moon_is_down(horizon=_k) is None for _k in TEST_INVALID_INPUTS[:-2])
 
 
 def test_telescope_122():
-    assert _tel.moon_is_up(obs_time=get_isot(
+    assert _tel.moon_is_down(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)) in [True, False, None]
 
 
 def test_telescope_123():
-    assert _tel.moon_is_up(obs_time=get_isot(
+    assert _tel.moon_is_down(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False)) in [True, False, None]
 
 
 # +
-# Telescope().moon_is_down(self, obs_time=Time(get_isot(0, True)), horizon=0*u.deg)
+# Telescope().moon_is_up(self, obs_time=Time(get_isot(0, True)), horizon=0*u.deg)
 # -
 def test_telescope_130():
-    assert all(_tel.moon_is_down(obs_time=_k) in [True, False, None] for _k in TEST_INVALID_INPUTS)
+    assert all(_tel.moon_is_up(obs_time=_k) in [True, False, None] for _k in TEST_INVALID_INPUTS)
 
 
 def test_telescope_131():
-    assert all(_tel.moon_is_down(horizon=_k) is None for _k in TEST_INVALID_INPUTS[:-2])
+    assert all(_tel.moon_is_up(horizon=_k) is None for _k in TEST_INVALID_INPUTS[:-2])
 
 
 def test_telescope_132():
-    assert _tel.moon_is_down(obs_time=get_isot(
+    assert _tel.moon_is_up(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)) in [True, False, None]
 
 
 def test_telescope_133():
-    assert _tel.moon_is_down(obs_time=get_isot(
+    assert _tel.moon_is_up(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False)) in [True, False, None]
 
 

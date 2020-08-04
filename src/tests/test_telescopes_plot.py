@@ -4,7 +4,7 @@
 # +
 # import(s)
 # -
-from . import *
+from src.tests import *
 from src.telescopes.factory import *
 
 
@@ -59,53 +59,6 @@ def test_telescope_12():
     _payload = {'x_axis': _t.obstime.datetime, 'y_axis': _t.alt.degree, 'z_axis': numpy.array(_t.az.degree)}
     _data = {**AST__PLOT__ALTAZ, **_payload}
     assert _tel_p.__verify_keys__(AST__PLOT__ALTAZ, AST__PLOT__KEYS)
-
-
-# +
-# AstroPlot().plot_airmass(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
-#     ndays=AST__NDAYS, save=True, show=False)
-# -
-def test_telescope_20():
-    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
-    _data_t = _tel_p.plot_airmass(obs_time=get_isot(
-        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_name=_t1, save=True)
-    _data_f = _tel_p.plot_airmass(obs_time=get_isot(
-        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False), obs_name=_t1, save=True)
-    assert all(isinstance(_k, str) for _k in [_data_t, _data_f])
-
-
-def test_telescope_21():
-    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
-    _ra_d, _dec_d = _tel_p.coords.ra.degree, _tel_p.coords.dec.degree
-    _ra_s, _dec_s = ra_from_decimal(_ra_d), dec_from_decimal(_dec_d)
-    _ra_l = _ra_s.replace(':', '').replace('.', '').strip()[:6]
-    _dec_l = _dec_s.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
-    _data_t = _tel_p.plot_airmass(obs_time=get_isot(
-        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_name=_t1, save=True)
-    assert os.path.exists(f'plot_{_ra_l}_{_dec_l}.png')
-
-
-def test_telescope_22():
-    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _coords = f"{_ra} {_dec}"
-    _data_t = _tel_p.plot_airmass(obs_time=Time(get_isot(
-        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)), obs_coords=_coords, save=True)
-    _data_f = _tel_p.plot_airmass(obs_time=Time(get_isot(
-        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False)), obs_coords=_coords, save=True)
-    assert all(isinstance(_k, str) for _k in [_data_t, _data_f])
-
-
-def test_telescope_23():
-    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _dec = f"{random.choice(['-', '+'])}{_dec}"
-    _coords = f"{_ra} {_dec}"
-    _ra_l = _ra.replace(':', '').replace('.', '').strip()[:6]
-    _dec_l = _dec.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
-    _data_t = _tel_p.plot_airmass(obs_time=get_isot(
-        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_coords=_coords, save=True)
-    assert os.path.exists(f'plot_{_ra_l}_{_dec_l}.png')
 
 
 # +
@@ -189,6 +142,53 @@ def test_telescope_51():
     _data_t = _tel_p.plot_sun_altaz(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), save=True)
     assert os.path.exists('plot_sun.png')
+
+
+# +
+# AstroPlot().plot_target_airmass(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
+#     ndays=AST__NDAYS, save=True, show=False)
+# -
+def test_telescope_20():
+    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _data_t = _tel_p.plot_target_airmass(obs_time=get_isot(
+        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_name=_t1, save=True)
+    _data_f = _tel_p.plot_target_airmass(obs_time=get_isot(
+        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False), obs_name=_t1, save=True)
+    assert all(isinstance(_k, str) for _k in [_data_t, _data_f])
+
+
+def test_telescope_21():
+    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _ra_d, _dec_d = _tel_p.coords.ra.degree, _tel_p.coords.dec.degree
+    _ra_s, _dec_s = ra_from_decimal(_ra_d), dec_from_decimal(_dec_d)
+    _ra_l = _ra_s.replace(':', '').replace('.', '').strip()[:6]
+    _dec_l = _dec_s.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
+    _data_t = _tel_p.plot_target_airmass(obs_time=get_isot(
+        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_name=_t1, save=True)
+    assert os.path.exists(f'plot_{_ra_l}_{_dec_l}.png')
+
+
+def test_telescope_22():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _coords = f"{_ra} {_dec}"
+    _data_t = _tel_p.plot_target_airmass(obs_time=Time(get_isot(
+        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)), obs_coords=_coords, save=True)
+    _data_f = _tel_p.plot_target_airmass(obs_time=Time(get_isot(
+        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False)), obs_coords=_coords, save=True)
+    assert all(isinstance(_k, str) for _k in [_data_t, _data_f])
+
+
+def test_telescope_23():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.choice(['-', '+'])}{_dec}"
+    _coords = f"{_ra} {_dec}"
+    _ra_l = _ra.replace(':', '').replace('.', '').strip()[:6]
+    _dec_l = _dec.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
+    _data_t = _tel_p.plot_target_airmass(obs_time=get_isot(
+        random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_coords=_coords, save=True)
+    assert os.path.exists(f'plot_{_ra_l}_{_dec_l}.png')
 
 
 # +

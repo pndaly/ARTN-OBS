@@ -207,6 +207,166 @@ class Logger(object):
 
 
 # +
+# function: dec_from_decimal()
+# -
+# noinspection PyBroadException,PyPep8,PyUnresolvedReferences
+def dec_from_decimal(dec=math.nan):
+    """ return Dec d:m:s from decimal """
+    try:
+        # noinspection PyUnresolvedReferences
+        _c = SkyCoord(ra=math.nan*u.degree, dec=dec*u.degree).dec.signed_dms
+        _d, _m, _s = int(_c.d), int(_c.m), _c.s
+        _sign = '+' if _c.sign == 1.0 else '-'
+        return f'{_sign}{_d:02d}:{_m:02d}:{_s:06.3f}'
+    except:
+        return None
+
+
+# +
+# function: dec_to_decimal()
+# -
+# noinspection PyBroadException,PyPep8
+def dec_to_decimal(dec='47:11:43 degrees'):
+    """ return Dec d:m:s as a decimal """
+    try:
+        dec = f'{dec} degrees' if 'degrees' not in dec.lower() else dec
+        return float(Angle(dec).degree)
+    except:
+        return math.nan
+
+
+# +
+# function: dec_to_dms()
+# -
+# noinspection PyBroadException,PyPep8,PyUnresolvedReferences
+def dec_to_dms(dec=math.nan):
+    """ return Dec from decimal to d:m:s """
+    try:
+        _c = Angle(dec, unit=u.degree).signed_dms
+        _d, _m, _s = int(_c.d), int(_c.m), _c.s
+        _sign = '+' if _c.sign == 1.0 else '-'
+        return f'{_sign}{_d:02d}:{_m:02d}:{_s:06.3f}'
+    except:
+        return None
+
+
+# +
+# function: decode_verboten():
+# -
+# noinspection PyBroadException,PyPep8
+def decode_verboten(string='The.ws.Quick.ws.Brown.ws.Fox.ws.Jumped.ws.Over.ws.The.ws.Lazy.ws.Dog', decode=None):
+    decode = decode if (isinstance(decode, dict) and decode is not {} and decode is not None) else OBS_DECODE_DICT
+    if isinstance(string, str) and string.strip() != '':
+        for c in decode.keys():
+            if c in string:
+                string = string.replace(c, decode[c])
+    return string
+
+
+# +
+# function: degree_to_radian()
+# -
+# noinspection PyBroadException,PyPep8
+def degree_to_radian(deg=math.nan):
+    """ converts degrees to radians """
+    try:
+        return math.radians(deg)
+    except:
+        return math.nan
+
+
+# +
+# function: encode_verboten():
+# -
+# noinspection PyBroadException,PyPep8
+def encode_verboten(string='The Quick Brown Fox Jumped Over The Lazy Dog', encode=None):
+    encode = encode if (isinstance(encode, dict) and encode is not {} and encode is not None) else OBS_ENCODE_DICT
+    if isinstance(string, str) and string != '':
+        for c in encode.keys():
+            if c in string:
+                string = string.replace(c, encode[c])
+    return string
+
+
+# +
+# function: ephem_to_isot()
+# -
+# noinspection PyBroadException,PyPep8
+def ephem_to_isot(date=None):
+    """ returns isot string from ephem date object """
+    try:
+        return date.datetime().isoformat()
+    except:
+        return None
+
+
+# +
+# function: get_astropy_coords()
+# -
+# noinspection PyBroadException,PyPep8
+def get_astropy_coords(name='M51'):
+    """ return co-ordinates of name via astropy lookup """
+    try:
+        _name = SkyCoord.from_name(name)
+        return _name.ra.value, _name.dec.value
+    except:
+        return math.nan, math.nan
+
+
+# +
+# function: get_date()
+# -
+# noinspection PyBroadException,PyPep8
+def get_date():
+    """ return date in iso format for any ndays offset """
+    try:
+        return datetime.now().isoformat()
+    except:
+        return None
+
+
+# +
+# function: get_hash()
+# -
+# noinspection PyBroadException,PyPep8
+def get_hash(seed=get_date()):
+    """ return unique 64-character string """
+    try:
+        return hashlib.sha256(seed.encode('utf-8')).hexdigest()
+    except:
+        return None
+
+
+# +
+# function: get_iers():
+# -
+# noinspection PyBroadException
+def get_iers(url=OBS_ASTROPLAN_IERS_URL):
+
+    # check input(s)
+    if not isinstance(url, str) or url.strip() == '':
+        raise Exception(f'invalid input, url={url}')
+    if not (url.lower().startswith('ftp') or url.lower().startswith('http')):
+        raise Exception(f'invalid input, url={url}')
+
+    # try astroplan download
+    try:
+        from astroplan import download_IERS_A
+        download_IERS_A()
+        return 'astroplan'
+
+    # try alternate download
+    except Exception:
+        from astroplan import download_IERS_A
+        from astropy.utils import iers
+        from astropy.utils.data import clear_download_cache
+        clear_download_cache()
+        iers.IERS_A_URL = f'{url}'
+        download_IERS_A()
+        return 'astropy'
+
+
+# +
 # function: get_isot()
 # -
 # noinspection PyBroadException,PyPep8
@@ -234,6 +394,72 @@ def get_jd(ndays=0):
 
 
 # +
+# function: get_last_semester()
+# -
+def get_last_semester(date=get_isot()):
+    """ return tuple of (last semester, code, last start date isot, current input isot, last end date isot) """
+
+    # check input(s)
+    if not isinstance(date, str) or re.match(OBS_ISO_PATTERN, date) is None:
+        raise Exception(f'invalid input, date={date}')
+
+    # get last semester
+    _q, _c, _s, _d, _e = get_semester(date)
+    _t = math.floor(isot_to_jd(_d) - isot_to_jd(_s)) + 1
+    _n = jd_to_isot(isot_to_jd(_d) - _t)
+    _q, _c, _s, _d, _e = get_semester(_n)
+
+    # return result
+    return _q, _c, _s, date, _e
+
+
+# +
+# function: get_next_semester()
+# -
+def get_next_semester(date=get_isot()):
+    """ return tuple of (next semester, code, next start date isot, current input isot, next end date isot) """
+
+    # check input(s)
+    if not isinstance(date, str) or re.match(OBS_ISO_PATTERN, date) is None:
+        raise Exception(f'invalid input, date={date}')
+
+    # get next semester
+    _q, _c, _s, _d, _e = get_semester(date)
+    _t = math.floor(isot_to_jd(_e) - isot_to_jd(_d)) + 1
+    _n = jd_to_isot(isot_to_jd(_d) + _t)
+    _q, _c, _s, _d, _e = get_semester(_n)
+
+    # return result
+    return _q, _c, _s, date, _e
+
+
+# +
+# function: get_semester()
+# -
+def get_semester(date=get_isot()):
+    """ return tuple of (semester, code, start date isot, input isot, end date isot) """
+
+    # check input(s)
+    if not isinstance(date, str) or re.match(OBS_ISO_PATTERN, date) is None:
+        raise Exception(f'invalid input, date={date}')
+
+    # get semester
+    _date = datetime.strptime(date, OBS_ISO_FORMAT)
+    _semester = int(math.ceil(_date.month/6.))
+    if _semester == 1:
+        _ans = _semester, f'{_date.year}A', f'{_date.year}-01-01T00:00:00.000000', \
+               date, f'{_date.year}-06-30T23:59:59.999999'
+    elif _semester == 2:
+        _ans = _semester, f'{_date.year}B', f'{_date.year}-07-01T00:00:00.000000', \
+               date, f'{_date.year}-12-31T23:59:59.999999'
+    else:
+        _ans = -1, '', '', date, ''
+
+    # return result
+    return _ans
+
+
+# +
 # function: isot_to_ephem()
 # -
 # noinspection PyBroadException,PyPep8
@@ -241,18 +467,6 @@ def isot_to_ephem(isot=get_isot()):
     """ returns ephem date object from isot date string """
     try:
         return ephem.Date(isot.replace('-', '/').replace('T', ' '))
-    except:
-        return None
-
-
-# +
-# function: ephem_to_isot()
-# -
-# noinspection PyBroadException,PyPep8
-def ephem_to_isot(date=None):
-    """ returns isot string from ephem date object """
-    try:
-        return date.datetime().isoformat()
     except:
         return None
 
@@ -289,18 +503,6 @@ def isot_to_nid(isot=get_isot()):
     """ returns ARTN night id from isot date string """
     try:
         return int(isot_to_jd(isot) - isot_to_jd(OBS_ZERO_NID))
-    except:
-        return None
-
-
-# +
-# function: nid_to_isot()
-# -
-# noinspection PyBroadException,PyPep8
-def nid_to_isot(nid=0):
-    """ returns date string from ARTN night id """
-    try:
-        return jd_to_isot(isot_to_jd(OBS_ZERO_NID) + nid)
     except:
         return None
 
@@ -354,277 +556,26 @@ def mjd_to_jd(mjd=math.nan):
 
 
 # +
-# function: get_hash()
-# -
-# noinspection PyBroadException,PyPep8
-def get_hash(seed=get_isot()):
-    """ return unique 64-character string """
-    try:
-        return hashlib.sha256(seed.encode('utf-8')).hexdigest()
-    except:
-        return None
-
-
-# +
-# function: ra_to_decimal()
-# -
-# noinspection PyBroadException,PyPep8
-def ra_to_decimal(ra='13:29:53 hours'):
-    """ return RA H:M:S as a decimal """
-    try:
-        ra = f'{ra} hours' if 'hours' not in ra.lower() else ra
-        return float(Angle(ra).degree)
-    except:
-        return math.nan
-
-
-# +
-# function: ra_from_decimal()
-# -
-# noinspection PyBroadException,PyPep8,PyUnresolvedReferences,PyUnresolvedReferences
-def ra_from_decimal(ra=math.nan):
-    """ return RA H:M:S from decimal """
-    try:
-        _c = SkyCoord(ra=ra*u.degree, dec=math.nan*u.degree).ra.hms
-        _h, _m, _s = int(_c.h), int(_c.m), _c.s
-        return f'{_h:02d}:{_m:02d}:{_s:06.3f}'
-    except Exception:
-        return None
-
-
-# +
-# function: ra_to_hms()
-# -
-# noinspection PyBroadException,PyPep8,PyUnresolvedReferences
-def ra_to_hms(ra=math.nan):
-    """ return RA from decimal to H:M:S """
-    try:
-        _c = Angle(ra, unit=u.degree).hms
-        _h, _m, _s = int(_c.h), int(_c.m), _c.s
-        return f'{_h:02d}:{_m:02d}:{_s:06.3f}'
-    except:
-        return None
-
-
-# +
-# function: dec_to_decimal()
-# -
-# noinspection PyBroadException,PyPep8
-def dec_to_decimal(dec='47:11:43 degrees'):
-    """ return Dec d:m:s as a decimal """
-    try:
-        dec = f'{dec} degrees' if 'degrees' not in dec.lower() else dec
-        return float(Angle(dec).degree)
-    except:
-        return math.nan
-
-
-# +
-# function: dec_from_decimal()
-# -
-# noinspection PyBroadException,PyPep8,PyUnresolvedReferences
-def dec_from_decimal(dec=math.nan):
-    """ return Dec d:m:s from decimal """
-    try:
-        # noinspection PyUnresolvedReferences
-        _c = SkyCoord(ra=math.nan*u.degree, dec=dec*u.degree).dec.signed_dms
-        _d, _m, _s = int(_c.d), int(_c.m), _c.s
-        _sign = '+' if _c.sign == 1.0 else '-'
-        return f'{_sign}{_d:02d}:{_m:02d}:{_s:06.3f}'
-    except:
-        return None
-
-
-# +
-# function: dec_to_dms()
-# -
-# noinspection PyBroadException,PyPep8,PyUnresolvedReferences
-def dec_to_dms(dec=math.nan):
-    """ return Dec from decimal to d:m:s """
-    try:
-        _c = Angle(dec, unit=u.degree).signed_dms
-        _d, _m, _s = int(_c.d), int(_c.m), _c.s
-        _sign = '+' if _c.sign == 1.0 else '-'
-        return f'{_sign}{_d:02d}:{_m:02d}:{_s:06.3f}'
-    except:
-        return None
-
-
-# +
-# function: degree_to_radian()
-# -
-# noinspection PyBroadException,PyPep8
-def degree_to_radian(deg=math.nan):
-    """ converts degrees to radians """
-    try:
-        return math.radians(deg)
-    except:
-        return math.nan
-
-
-# +
-# function: radian_to_degree()
-# -
-# noinspection PyBroadException,PyPep8
-def radian_to_degree(rad=math.nan):
-    """ converts radians to degrees """
-    try:
-        return math.degrees(rad)
-    except:
-        return math.nan
-
-
-# +
-# function: get_astropy_coords()
-# -
-# noinspection PyBroadException,PyPep8
-def get_astropy_coords(name='M51'):
-    """ return co-ordinates of name via astropy lookup """
-    try:
-        _name = SkyCoord.from_name(name)
-        return _name.ra.value, _name.dec.value
-    except:
-        return math.nan, math.nan
-
-
-# +
-# function: decode_verboten():
-# -
-# noinspection PyBroadException,PyPep8
-def decode_verboten(string='The.ws.Quick.ws.Brown.ws.Fox.ws.Jumped.ws.Over.ws.The.ws.Lazy.ws.Dog', decode=None):
-    decode = decode if (isinstance(decode, dict) and decode is not {} and decode is not None) else OBS_DECODE_DICT
-    if isinstance(string, str) and string.strip() != '':
-        for c in decode.keys():
-            if c in string:
-                string = string.replace(c, decode[c])
-    return string
-
-
-# +
-# function: encode_verboten():
-# -
-# noinspection PyBroadException,PyPep8
-def encode_verboten(string='The Quick Brown Fox Jumped Over The Lazy Dog', encode=None):
-    encode = encode if (isinstance(encode, dict) and encode is not {} and encode is not None) else OBS_ENCODE_DICT
-    if isinstance(string, str) and string != '':
-        for c in encode.keys():
-            if c in string:
-                string = string.replace(c, encode[c])
-    return string
-
-
-# +
-# function: read_png():
-# -
-# noinspection PyBroadException,PyPep8
-def read_png(file=''):
-    try:
-        with open(os.path.abspath(os.path.expanduser(file)), "rb") as f:
-            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
-    except:
-        return None
-
-
-# +
-# function: get_iers():
-# -
-# noinspection PyBroadException
-def get_iers(url=OBS_ASTROPLAN_IERS_URL):
-
-    # check input(s)
-    if not isinstance(url, str) or url.strip() == '':
-        raise Exception(f'invalid input, url={url}')
-    if not (url.lower().startswith('ftp') or url.lower().startswith('http')):
-        raise Exception(f'invalid input, url={url}')
-
-    # try astroplan download
-    try:
-        from astroplan import download_IERS_A
-        download_IERS_A()
-        return 'astroplan'
-
-    # try alternate download
-    except Exception:
-        from astroplan import download_IERS_A
-        from astropy.utils import iers
-        from astropy.utils.data import clear_download_cache
-        clear_download_cache()
-        iers.IERS_A_URL = f'{url}'
-        download_IERS_A()
-        return 'astropy'
-
-
-# +
-# function: get_semester()
-# -
-def get_semester(date=get_isot()):
-    """ return tuple of (semester, code, start date isot, input isot, end date isot) """
-
-    # check input(s)
-    if not isinstance(date, str) or re.match(OBS_ISO_PATTERN, date) is None:
-        raise Exception(f'invalid input, date={date}')
-
-    # get semester
-    _date = datetime.strptime(date, OBS_ISO_FORMAT)
-    _semester = int(math.ceil(_date.month/6.))
-    if _semester == 1:
-        _ans = _semester, f'{_date.year}A', f'{_date.year}-01-01T00:00:00.000000', \
-               date, f'{_date.year}-06-30T23:59:59.999999'
-    elif _semester == 2:
-        _ans = _semester, f'{_date.year}B', f'{_date.year}-07-01T00:00:00.000000', \
-               date, f'{_date.year}-12-31T23:59:59.999999'
-    else:
-        _ans = -1, '', '', date, ''
-
-    # return result
-    return _ans
-
-
-# +
-# function: get_last_semester()
-# -
-def get_last_semester(date=get_isot()):
-    """ return tuple of (last semester, code, last start date isot, current input isot, last end date isot) """
-
-    # check input(s)
-    if not isinstance(date, str) or re.match(OBS_ISO_PATTERN, date) is None:
-        raise Exception(f'invalid input, date={date}')
-
-    # get last semester
-    _q, _c, _s, _d, _e = get_semester(date)
-    _t = math.floor(isot_to_jd(_d) - isot_to_jd(_s)) + 1
-    _n = jd_to_isot(isot_to_jd(_d) - _t)
-    _q, _c, _s, _d, _e = get_semester(_n)
-
-    # return result
-    return _q, _c, _s, date, _e
-
-
-# +
-# function: get_next_semester()
-# -
-def get_next_semester(date=get_isot()):
-    """ return tuple of (next semester, code, next start date isot, current input isot, next end date isot) """
-
-    # check input(s)
-    if not isinstance(date, str) or re.match(OBS_ISO_PATTERN, date) is None:
-        raise Exception(f'invalid input, date={date}')
-
-    # get next semester
-    _q, _c, _s, _d, _e = get_semester(date)
-    _t = math.floor(isot_to_jd(_e) - isot_to_jd(_d)) + 1
-    _n = jd_to_isot(isot_to_jd(_d) + _t)
-    _q, _c, _s, _d, _e = get_semester(_n)
-
-    # return result
-    return _q, _c, _s, date, _e
-
-
-# +
 # function(): nearest()
 # -
+# noinspection PyBroadException,PyPep8
 def nearest(dates=None, pivot=None):
-    return min(dates, key=lambda _x: abs(_x - pivot))
+    try:
+        return min(dates, key=lambda _x: abs(_x - pivot))
+    except:
+        return None
+
+
+# +
+# function: nid_to_isot()
+# -
+# noinspection PyBroadException,PyPep8
+def nid_to_isot(nid=0):
+    """ returns date string from ARTN night id """
+    try:
+        return jd_to_isot(isot_to_jd(OBS_ZERO_NID) + nid)
+    except:
+        return None
 
 
 # +
@@ -649,3 +600,68 @@ def pdh(msg='', color=''):
             print(f"\033[0;36m\033#3{_msg}\n\033#4{_msg}\033[0m")
         else:
             print(f"\033#3{_msg}\n\033#4{_msg}")
+
+
+# +
+# function: ra_from_decimal()
+# -
+# noinspection PyBroadException,PyPep8,PyUnresolvedReferences,PyUnresolvedReferences
+def ra_from_decimal(ra=math.nan):
+    """ return RA H:M:S from decimal """
+    try:
+        _c = SkyCoord(ra=ra*u.degree, dec=math.nan*u.degree).ra.hms
+        _h, _m, _s = int(_c.h), int(_c.m), _c.s
+        return f'{_h:02d}:{_m:02d}:{_s:06.3f}'
+    except Exception:
+        return None
+
+
+# +
+# function: ra_to_decimal()
+# -
+# noinspection PyBroadException,PyPep8
+def ra_to_decimal(ra='13:29:53 hours'):
+    """ return RA H:M:S as a decimal """
+    try:
+        ra = f'{ra} hours' if 'hours' not in ra.lower() else ra
+        return float(Angle(ra).degree)
+    except:
+        return math.nan
+
+
+# +
+# function: ra_to_hms()
+# -
+# noinspection PyBroadException,PyPep8,PyUnresolvedReferences
+def ra_to_hms(ra=math.nan):
+    """ return RA from decimal to H:M:S """
+    try:
+        _c = Angle(ra, unit=u.degree).hms
+        _h, _m, _s = int(_c.h), int(_c.m), _c.s
+        return f'{_h:02d}:{_m:02d}:{_s:06.3f}'
+    except:
+        return None
+
+
+# +
+# function: radian_to_degree()
+# -
+# noinspection PyBroadException,PyPep8
+def radian_to_degree(rad=math.nan):
+    """ converts radians to degrees """
+    try:
+        return math.degrees(rad)
+    except:
+        return math.nan
+
+
+# +
+# function: read_png():
+# -
+# noinspection PyBroadException,PyPep8
+def read_png(file=''):
+    try:
+        with open(os.path.abspath(os.path.expanduser(file)), "rb") as f:
+            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+    except:
+        return None

@@ -40,13 +40,13 @@ class NonSidereal(ObsParams):
     # -
     def __init__(self, telescope=None, instrument=None, log=None):
 
-        # init super-class
+        # initialize parent(s)
         super().__init__(telescope, instrument, log)
-
-        # initialize other variable(s)
         self.__telescope = self.telescope
         self.__instrument = self.instrument
         self.__log = self.log
+
+        # initialize other variable(s)
         self.__begin = None
         self.__begin_jd = None
         self.__db = None

@@ -465,6 +465,17 @@ class Telescope(object):
             return None
 
     # +
+    # method: moon_alt()
+    # -
+    def moon_alt(self, obs_time=Time(get_isot(0, True))):
+        """ returns lunar alt """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.moon_altaz(self.__time).alt.value
+        except:
+            return math.nan
+
+    # +
     # method: moon_altaz()
     # -
     def moon_altaz(self, obs_time=Time(get_isot(0, True))):
@@ -486,17 +497,6 @@ class Telescope(object):
             return self.__observer.moon_altaz(self.__time)
         except:
             return None
-
-    # +
-    # method: moon_alt()
-    # -
-    def moon_alt(self, obs_time=Time(get_isot(0, True))):
-        """ returns lunar alt """
-        try:
-            self.__convert_time__(obs_time=obs_time)
-            return self.moon_altaz(self.__time).alt.value
-        except:
-            return math.nan
 
     # +
     # method: moon_az()
@@ -607,6 +607,17 @@ class Telescope(object):
         return None
 
     # +
+    # method: moon_dec()
+    # -
+    def moon_dec(self, obs_time=Time(get_isot(0, True))):
+        """ returns lunar dec """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.moon_radec(self.__time).dec.value
+        except:
+            return math.nan
+
+    # +
     # method: moon_distance()
     # -
     def moon_distance(self, obs_time=Time(get_isot(0, True))):
@@ -668,17 +679,6 @@ class Telescope(object):
             return None
 
     # +
-    # method: moon_is_up()
-    # -
-    def moon_is_up(self, obs_time=Time(get_isot(0, True)), horizon=0.0):
-        """ returns flag for moon above horizon """
-        try:
-            self.__convert_time__(obs_time=obs_time)
-            return self.moon_alt(self.__time) > float(horizon)
-        except:
-            return None
-
-    # +
     # method: moon_is_down()
     # -
     def moon_is_down(self, obs_time=Time(get_isot(0, True)), horizon=0.0):
@@ -686,6 +686,17 @@ class Telescope(object):
         try:
             self.__convert_time__(obs_time=obs_time)
             return self.moon_alt(self.__time) < float(horizon)
+        except:
+            return None
+
+    # +
+    # method: moon_is_up()
+    # -
+    def moon_is_up(self, obs_time=Time(get_isot(0, True)), horizon=0.0):
+        """ returns flag for moon above horizon """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.moon_alt(self.__time) > float(horizon)
         except:
             return None
 
@@ -713,6 +724,17 @@ class Telescope(object):
             return None
 
     # +
+    # method: moon_ra()
+    # -
+    def moon_ra(self, obs_time=Time(get_isot(0, True))):
+        """ returns lunar ra """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.moon_radec(self.__time).ra.value
+        except:
+            return math.nan
+
+    # +
     # method: moon_radec()
     # -
     def moon_radec(self, obs_time=Time(get_isot(0, True))):
@@ -734,28 +756,6 @@ class Telescope(object):
             return get_moon(self.__time, location=self.__observatory)
         except:
             return None
-
-    # +
-    # method: moon_ra()
-    # -
-    def moon_ra(self, obs_time=Time(get_isot(0, True))):
-        """ returns lunar ra """
-        try:
-            self.__convert_time__(obs_time=obs_time)
-            return self.moon_radec(self.__time).ra.value
-        except:
-            return math.nan
-
-    # +
-    # method: moon_dec()
-    # -
-    def moon_dec(self, obs_time=Time(get_isot(0, True))):
-        """ returns lunar dec """
-        try:
-            self.__convert_time__(obs_time=obs_time)
-            return self.moon_radec(self.__time).dec.value
-        except:
-            return math.nan
 
     # +
     # method: moon_rise()
@@ -923,6 +923,17 @@ class Telescope(object):
             return math.nan
 
     # +
+    # method: sun_alt()
+    # -
+    def sun_alt(self, obs_time=Time(get_isot(0, True))):
+        """ returns solar alt """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.sun_altaz(self.__time).alt.value
+        except:
+            return math.nan
+
+    # +
     # method: sun_altaz()
     # -
     def sun_altaz(self, obs_time=Time(get_isot(0, True))):
@@ -946,17 +957,6 @@ class Telescope(object):
             return None
 
     # +
-    # method: sun_alt()
-    # -
-    def sun_alt(self, obs_time=Time(get_isot(0, True))):
-        """ returns solar alt """
-        try:
-            self.__convert_time__(obs_time=obs_time)
-            return self.sun_altaz(self.__time).alt.value
-        except:
-            return math.nan
-
-    # +
     # method: sun_az()
     # -
     def sun_az(self, obs_time=Time(get_isot(0, True))):
@@ -968,6 +968,17 @@ class Telescope(object):
             return math.nan
 
     # +
+    # method: sun_dec()
+    # -
+    def sun_dec(self, obs_time=Time(get_isot(0, True))):
+        """ returns solar dec """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.sun_radec(self.__time).dec.value
+        except:
+            return math.nan
+
+    # +
     # method: sun_distance()
     # -
     def sun_distance(self, obs_time=Time(get_isot(0, True))):
@@ -975,6 +986,17 @@ class Telescope(object):
         try:
             self.__convert_time__(obs_time=obs_time)
             return self.sun_altaz(self.__time).distance.value
+        except:
+            return math.nan
+
+    # +
+    # method: sun_ra()
+    # -
+    def sun_ra(self, obs_time=Time(get_isot(0, True))):
+        """ returns solar ra """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.sun_radec(self.__time).ra.value
         except:
             return math.nan
 
@@ -1000,28 +1022,6 @@ class Telescope(object):
             return get_sun(self.__time)
         except:
             return None
-
-    # +
-    # method: sun_ra()
-    # -
-    def sun_ra(self, obs_time=Time(get_isot(0, True))):
-        """ returns solar ra """
-        try:
-            self.__convert_time__(obs_time=obs_time)
-            return self.sun_radec(self.__time).ra.value
-        except:
-            return math.nan
-
-    # +
-    # method: sun_dec()
-    # -
-    def sun_dec(self, obs_time=Time(get_isot(0, True))):
-        """ returns solar dec """
-        try:
-            self.__convert_time__(obs_time=obs_time)
-            return self.sun_radec(self.__time).dec.value
-        except:
-            return math.nan
 
     # +
     # method: sun_rise()
@@ -1106,6 +1106,17 @@ class Telescope(object):
             return None
 
     # +
+    # method: target_alt()
+    # -
+    def target_alt(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
+        """ returns target alt """
+        try:
+            self.__convert_time__(obs_time=obs_time)
+            return self.target_altaz(self.__time, obs_name=obs_name, obs_coords=obs_coords).alt.value
+        except:
+            return math.nan
+
+    # +
     # method: target_altaz()
     # -
     def target_altaz(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
@@ -1133,17 +1144,6 @@ class Telescope(object):
             return None
 
     # +
-    # method: target_alt()
-    # -
-    def target_alt(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
-        """ returns target alt """
-        try:
-            self.__convert_time__(obs_time=obs_time)
-            return self.target_altaz(self.__time, obs_name=obs_name, obs_coords=obs_coords).alt.value
-        except:
-            return math.nan
-
-    # +
     # method: target_az()
     # -
     def target_az(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords=''):
@@ -1153,6 +1153,36 @@ class Telescope(object):
             return self.target_altaz(self.__time, obs_name=obs_name, obs_coords=obs_coords).az.value
         except:
             return math.nan
+
+    # +
+    # method: target_dec(self, obs_name='', obs_coords='')
+    # -
+    def target_dec(self, obs_name='', obs_coords=''):
+        """ returns target dec (degree) """
+        try:
+            return self.target_radec(obs_name=obs_name, obs_coords=obs_coords).dec.value
+        except:
+            return math.nan
+
+    # +
+    # method: target_ra(self, obs_name='', obs_coords='')
+    # -
+    def target_ra(self, obs_name='', obs_coords=''):
+        """ returns target ra (degree) """
+        try:
+            return self.target_radec(obs_name=obs_name, obs_coords=obs_coords).ra.value
+        except:
+            return math.nan
+
+    # +
+    # method: target_radec(self, obs_name='', obs_coords='')
+    # -
+    def target_radec(self, obs_name='', obs_coords=''):
+        """ returns target (ra_deg, dec_deg) """
+        try:
+            return self.__convert_coords__(obs_name=obs_name, obs_coords=obs_coords)
+        except:
+            return None
 
     # +
     # method: target_rise()
@@ -1384,54 +1414,6 @@ class AstroPlot(Telescope):
             return False
 
     # +
-    # method: plot_airmass()
-    # -
-    def plot_airmass(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
-                     ndays=AST__NDAYS, save=True, show=False):
-        """ plot airmass """
-        try:
-            ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
-            save = save if isinstance(save, bool) else True
-            show = show if isinstance(show, bool) else False
-
-            # get array(s)
-            self.__airmass = self.target_airmass_ndays(
-                obs_time=obs_time, obs_name=obs_name, obs_coords=obs_coords, ndays=ndays)
-            self.__airmass_time = self.__airmass.obstime[
-                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
-            self.__airmass_secz = self.__airmass.secz[
-                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
-            self.__airmass_az = self.__airmass.az[
-                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
-
-            # create label(s)
-            _ra_d, _dec_d = self.coords.ra.degree, self.coords.dec.degree
-            _ra_s, _dec_s = ra_from_decimal(_ra_d), dec_from_decimal(_dec_d)
-            _ra_l = _ra_s.replace(':', '').replace('.', '').strip()[:6]
-            _dec_l = _dec_s.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
-            _file = f'plot_{_ra_l}_{_dec_l}.png'
-            _title = f"{obs_name} RA={_ra_s[:10]}, Dec={_dec_s[:11]}\n" \
-                     f"(RA={_ra_d:.3f}{OBS_DEGREE}, Dec={_dec_d:.3f}{OBS_DEGREE})"
-            _now = Time(get_isot(0, True))
-            _time = str(self.__airmass_time[0]).split()[0]
-
-            # generate plot
-            _time = str(self.__airmass_time[0]).split()[0]
-            _payload = {'x_axis': self.__airmass_time.datetime, 'x_label': f'{_time} (UTC)',
-                        'x_min': self.__airmass_time.datetime[0], 'x_max': self.__airmass_time.datetime[-1],
-                        'y_axis': self.__airmass_secz, 'z_axis': numpy.array(self.__airmass_az),
-                        'y_min': self.min_airmass, 'y_max': self.max_airmass, 'zp_min': 2.0,
-                        'y_label': f'Airmass ({OBS_PROPORTIONAL} secZ)', 'zp_max': 2.0, 'y_invert': True,
-                        'title': f'{_title}', 'show': show, 'file': f'{_file}' if save else ''}
-            _data = {**AST__PLOT__ALTAZ, **_payload}
-            if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
-                return self.__plot_altaz__(**_data)
-            else:
-                return None
-        except:
-            return None
-
-    # +
     # method: plot_all_altaz()
     # -
     def plot_all_altaz(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
@@ -1565,6 +1547,54 @@ class AstroPlot(Telescope):
                         'x_min': self.__sun_time.datetime[0], 'x_max': self.__sun_time.datetime[-1],
                         'y_axis': self.__sun_alt.degree, 'z_axis': numpy.array(self.__sun_az.degree),
                         'title': f'Sun\n({self.aka})', 'show': show, 'file': 'plot_sun.png' if save else ''}
+            _data = {**AST__PLOT__ALTAZ, **_payload}
+            if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
+                return self.__plot_altaz__(**_data)
+            else:
+                return None
+        except:
+            return None
+
+    # +
+    # method: plot_target_airmass()
+    # -
+    def plot_target_airmass(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
+                            ndays=AST__NDAYS, save=True, show=False):
+        """ plot airmass """
+        try:
+            ndays = ndays if (isinstance(ndays, int) and ndays > 0) else AST__NDAYS
+            save = save if isinstance(save, bool) else True
+            show = show if isinstance(show, bool) else False
+
+            # get array(s)
+            self.__airmass = self.target_airmass_ndays(
+                obs_time=obs_time, obs_name=obs_name, obs_coords=obs_coords, ndays=ndays)
+            self.__airmass_time = self.__airmass.obstime[
+                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
+            self.__airmass_secz = self.__airmass.secz[
+                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
+            self.__airmass_az = self.__airmass.az[
+                (self.__airmass.secz < self.max_airmass) & (self.__airmass.secz > self.min_airmass)]
+
+            # create label(s)
+            _ra_d, _dec_d = self.coords.ra.degree, self.coords.dec.degree
+            _ra_s, _dec_s = ra_from_decimal(_ra_d), dec_from_decimal(_dec_d)
+            _ra_l = _ra_s.replace(':', '').replace('.', '').strip()[:6]
+            _dec_l = _dec_s.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
+            _file = f'plot_{_ra_l}_{_dec_l}.png'
+            _title = f"{obs_name} RA={_ra_s[:10]}, Dec={_dec_s[:11]}\n" \
+                     f"(RA={_ra_d:.3f}{OBS_DEGREE}, Dec={_dec_d:.3f}{OBS_DEGREE})"
+            _now = Time(get_isot(0, True))
+            _time = str(self.__airmass_time[0]).split()[0]
+
+            # generate plot
+            _time = str(self.__airmass_time[0]).split()[0]
+            _payload = {'x_axis': self.__airmass_time.datetime, 'x_label': f'{_time} (UTC)',
+                        'x_min': self.__airmass_time.datetime[0], 'x_max': self.__airmass_time.datetime[-1],
+                        'y_axis': self.__airmass_secz, 'z_axis': numpy.array(self.__airmass_az),
+                        'y_min': self.min_airmass, 'y_max': self.max_airmass, 'zp_min': 2.0,
+                        'y_label': f'Airmass ({OBS_PROPORTIONAL} secZ)', 'zp_max': 2.0, 'y_invert': True,
+                        'title': f'{_title}', 'show': show, 'file': f'{_file}' if save else ''}
             _data = {**AST__PLOT__ALTAZ, **_payload}
             if self.__verify_keys__(_data, AST__PLOT__KEYS) and self.__verify_dict__(_data):
                 return self.__plot_altaz__(**_data)

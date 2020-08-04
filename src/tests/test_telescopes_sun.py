@@ -4,7 +4,7 @@
 # +
 # import(s)
 # -
-from . import *
+from src.tests import *
 from src.telescopes.factory import *
 
 import astropy
@@ -493,26 +493,20 @@ def test_telescope_122():
 # Telescope().sun_radec() vs. Telescope().sun_altaz()
 # -
 def test_telescope_130():
-
     _sun_radec = _tel.sun_radec()
     _coords = f"{ra_from_decimal(_sun_radec.ra.value)} {dec_from_decimal(_sun_radec.dec.value)}"
     _radec_to_altaz = _tel.radec_to_altaz(obs_coords=_coords)
     _alt_1, _az_1 = _radec_to_altaz.alt.value, _radec_to_altaz.az.value
-
     _sun_altaz = _tel.sun_altaz()
     _alt_2, _az_2 = _sun_altaz.alt.value, _sun_altaz.az.value
-
     assert math.isclose(_alt_1, _alt_2, rel_tol=TEST_TOLERANCE['3dp'])
 
 
 def test_telescope_131():
-
     _sun_radec = _tel.sun_radec()
     _coords = f"{ra_from_decimal(_sun_radec.ra.value)} {dec_from_decimal(_sun_radec.dec.value)}"
     _radec_to_altaz = _tel.radec_to_altaz(obs_coords=_coords)
     _alt_1, _az_1 = _radec_to_altaz.alt.value, _radec_to_altaz.az.value
-
     _sun_altaz = _tel.sun_altaz()
     _alt_2, _az_2 = _sun_altaz.alt.value, _sun_altaz.az.value
-
     assert math.isclose(_az_1, _az_2, rel_tol=TEST_TOLERANCE['3dp'])

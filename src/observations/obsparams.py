@@ -183,7 +183,7 @@ class ObsParams(object):
             self.__log = None
 
     # +
-    # Decorator(s) for getter(s) / setter(s)
+    # getter(s) / setter(s)
     # -
     @property
     def dark_cone_angle(self):

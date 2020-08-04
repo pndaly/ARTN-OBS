@@ -4,8 +4,8 @@
 # +
 # import(s)
 # -
-from . import *
 from pytest import raises as ptr
+from src.tests import *
 from src.observations.flats import *
 
 

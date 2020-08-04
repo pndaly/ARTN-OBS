@@ -4,8 +4,8 @@
 # +
 # import(s)
 # -
-from . import *
 from pytest import raises as ptr
+from src.tests import *
 from src.telescopes.factory import *
 
 import astroplan
@@ -709,7 +709,6 @@ def test_telescope_193():
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_name=_t1)
     _val_f = _tel.target_alt(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False), obs_name=_t1)
-    # noinspection PyUnresolvedReferences
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
@@ -731,7 +730,6 @@ def test_telescope_195():
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_coords=_coords)
     _val_f = _tel.target_alt(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False), obs_coords=_coords)
-    # noinspection PyUnresolvedReferences
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
@@ -976,7 +974,6 @@ def test_telescope_223():
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_name=_t1)
     _val_f = _tel.target_az(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False), obs_name=_t1)
-    # noinspection PyUnresolvedReferences
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
@@ -997,7 +994,6 @@ def test_telescope_225():
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_coords=_coords)
     _val_f = _tel.target_az(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False), obs_coords=_coords)
-    # noinspection PyUnresolvedReferences
     assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
@@ -1013,22 +1009,153 @@ def test_telescope_226():
 
 
 # +
-# Telescope().target_rise(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
-#     which=AST__WHICH[-1], utc=False)
+# Telescope().target_dec(self, obs_time=Time(get_isot(0, True)))
 # -
 def test_telescope_230():
-    assert all(_tel.target_rise(obs_time=_k) is None for _k in TEST_INVALID_INPUTS)
+    assert all(_tel.target_dec(obs_name=_k) is math.nan for _k in TEST_INVALID_INPUTS)
 
 
 def test_telescope_231():
-    assert all(_tel.target_rise(obs_name=_k) is None for _k in TEST_INVALID_INPUTS)
+    assert all(_tel.target_dec(obs_coords=_k) is math.nan for _k in TEST_INVALID_INPUTS)
 
 
 def test_telescope_232():
-    assert all(_tel.target_rise(obs_coords=_k) is None for _k in TEST_INVALID_INPUTS)
+    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_dec(obs_name=_t1)
+    _val_f = _tel.target_dec(obs_name=_t1)
+    assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
 
 
 def test_telescope_233():
+    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_dec(obs_name=_t1)
+    _val_f = _tel.target_dec(obs_name=_t1)
+    assert all(-90.0 <= _k <= 90.0 for _k in [_val_t, _val_f])
+
+
+def test_telescope_234():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_dec(obs_coords=_coords)
+    _val_f = _tel.target_dec(obs_coords=_coords)
+    assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
+
+
+def test_telescope_235():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_dec(obs_coords=_coords)
+    _val_f = _tel.target_dec(obs_coords=_coords)
+    assert all(-360.0 <= _k <= 360.0 for _k in [_val_t, _val_f])
+
+
+# +
+# Telescope().target_ra(self, obs_time=Time(get_isot(0, True)))
+# -
+def test_telescope_240():
+    assert all(_tel.target_ra(obs_name=_k) is math.nan for _k in TEST_INVALID_INPUTS)
+
+
+def test_telescope_241():
+    assert all(_tel.target_ra(obs_coords=_k) is math.nan for _k in TEST_INVALID_INPUTS)
+
+
+def test_telescope_242():
+    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_ra(obs_name=_t1)
+    _val_f = _tel.target_ra(obs_name=_t1)
+    assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
+
+
+def test_telescope_243():
+    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_ra(obs_name=_t1)
+    _val_f = _tel.target_ra(obs_name=_t1)
+    assert all(-360.0 <= _k <= 360.0 for _k in [_val_t, _val_f])
+
+
+def test_telescope_244():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_ra(obs_coords=_coords)
+    _val_f = _tel.target_ra(obs_coords=_coords)
+    assert all(isinstance(_k, float) for _k in [_val_t, _val_f])
+
+
+def test_telescope_245():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_ra(obs_coords=_coords)
+    _val_f = _tel.target_ra(obs_coords=_coords)
+    assert all(-360.0 <= _k <= 360.0 for _k in [_val_t, _val_f])
+
+
+# +
+# Telescope().target_radec(self, obs_time=Time(get_isot(0, True)))
+# -
+def test_telescope_250():
+    assert all(_tel.target_radec(obs_name=_k) is None for _k in TEST_INVALID_INPUTS)
+
+
+def test_telescope_251():
+    assert all(_tel.target_radec(obs_coords=_k) is None for _k in TEST_INVALID_INPUTS)
+
+
+def test_telescope_252():
+    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_radec(obs_name=_t1)
+    _val_f = _tel.target_radec(obs_name=_t1)
+    # noinspection PyUnresolvedReferences
+    assert all(isinstance(_k, astropy.coordinates.sky_coordinate.SkyCoord) for _k in [_val_t, _val_f])
+
+
+def test_telescope_253():
+    _t1 = OBS_ZODIAC.get(random.randint(0, 11), 'Polaris')
+    _val_t = _tel.target_radec(obs_name=_t1)
+    _val_f = _tel.target_radec(obs_name=_t1)
+    assert all(isinstance(_k, float) for _k in [_val_t.ra.value, _val_t.dec.value, _val_f.ra.value, _val_f.dec.value])
+
+
+def test_telescope_254():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_radec(obs_coords=_coords)
+    _val_f = _tel.target_radec(obs_coords=_coords)
+    # noinspection PyUnresolvedReferences
+    assert all(isinstance(_k, astropy.coordinates.sky_coordinate.SkyCoord) for _k in [_val_t, _val_f])
+
+
+def test_telescope_255():
+    _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+    _coords = f"{_ra} {_dec}"
+    _val_t = _tel.target_radec(obs_coords=_coords)
+    _val_f = _tel.target_radec(obs_coords=_coords)
+    assert all(isinstance(_k, float) for _k in [_val_t.ra.value, _val_t.dec.value, _val_f.ra.value, _val_f.dec.value])
+
+
+# +
+# Telescope().target_rise(self, obs_time=Time(get_isot(0, True)), obs_name='', obs_coords='',
+#     which=AST__WHICH[-1], utc=False)
+# -
+def test_telescope_260():
+    assert all(_tel.target_rise(obs_time=_k) is None for _k in TEST_INVALID_INPUTS)
+
+
+def test_telescope_261():
+    assert all(_tel.target_rise(obs_name=_k) is None for _k in TEST_INVALID_INPUTS)
+
+
+def test_telescope_262():
+    assert all(_tel.target_rise(obs_coords=_k) is None for _k in TEST_INVALID_INPUTS)
+
+
+def test_telescope_263():
     _d1 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _d2 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _d3 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False)
@@ -1046,7 +1173,7 @@ def test_telescope_233():
     assert all(re.match(OBS_ISO_PATTERN, _k) is not None for _k in [_val_1, _val_2, _val_3, _val_4])
 
 
-def test_telescope_234():
+def test_telescope_264():
     _d1 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _m1 = int(_d1.split('T')[0].split('-')[1])
     _val_t = isot_to_jd(_tel.target_rise(obs_time=_d1, obs_name=OBS_ZODIAC.get(_m1, 'Polaris'), utc=True))
@@ -1054,7 +1181,7 @@ def test_telescope_234():
     assert math.isclose(abs(_val_t - _val_f), abs(_tel.utc_offset/24.0), rel_tol=0.0001)
 
 
-def test_telescope_235():
+def test_telescope_265():
     _d1 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _d2 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _d3 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False)
@@ -1082,7 +1209,7 @@ def test_telescope_235():
     assert all(re.match(OBS_ISO_PATTERN, _k) is not None for _k in [_val_1, _val_2, _val_3, _val_4])
 
 
-def test_telescope_236():
+def test_telescope_266():
     _d1 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _m1 = int(_d1.split('T')[0].split('-')[1])
     _t1 = get_astropy_coords(name=OBS_ZODIAC.get(_m1, 'Polaris'))
@@ -1095,19 +1222,19 @@ def test_telescope_236():
 # +
 # Telescope().target_set()
 # -
-def test_telescope_240():
+def test_telescope_270():
     assert all(_tel.target_set(obs_time=_k) is None for _k in TEST_INVALID_INPUTS)
 
 
-def test_telescope_241():
+def test_telescope_271():
     assert all(_tel.target_set(obs_name=_k) is None for _k in TEST_INVALID_INPUTS)
 
 
-def test_telescope_242():
+def test_telescope_272():
     assert all(_tel.target_set(obs_coords=_k) is None for _k in TEST_INVALID_INPUTS)
 
 
-def test_telescope_243():
+def test_telescope_273():
     _d1 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _d2 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _d3 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False)
@@ -1125,7 +1252,7 @@ def test_telescope_243():
     assert all(re.match(OBS_ISO_PATTERN, _k) is not None for _k in [_val_1, _val_2, _val_3, _val_4])
 
 
-def test_telescope_244():
+def test_telescope_274():
     _d1 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _m1 = int(_d1.split('T')[0].split('-')[1])
     _val_t = isot_to_jd(_tel.target_set(obs_time=_d1, obs_name=OBS_ZODIAC.get(_m1, 'Polaris'), utc=True))
@@ -1133,7 +1260,7 @@ def test_telescope_244():
     assert math.isclose(abs(_val_t - _val_f), abs(_tel.utc_offset/24.0), rel_tol=0.0001)
 
 
-def test_telescope_245():
+def test_telescope_275():
     _d1 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _d2 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _d3 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False)
@@ -1161,7 +1288,7 @@ def test_telescope_245():
     assert all(re.match(OBS_ISO_PATTERN, _k) is not None for _k in [_val_1, _val_2, _val_3, _val_4])
 
 
-def test_telescope_246():
+def test_telescope_276():
     _d1 = get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True)
     _m1 = int(_d1.split('T')[0].split('-')[1])
     _t1 = get_astropy_coords(name=OBS_ZODIAC.get(_m1, 'Polaris'))
@@ -1174,13 +1301,13 @@ def test_telescope_246():
 # +
 # Telescope().tonight(self, obs_time=Time(get_isot(0, True)), utc=False)
 # -
-def test_telescope_250():
+def test_telescope_280():
     _val_t = _tel.tonight(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True))
     _val_f = _tel.tonight(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False))
     assert all(re.match(OBS_ISO_PATTERN, _k) for _k in [_val_t[0], _val_f[0]])
 
 
-def test_telescope_251():
+def test_telescope_281():
     _val_t = _tel.tonight(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True))
     _val_f = _tel.tonight(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False))
     assert all(re.match(OBS_ISO_PATTERN, _k) for _k in [_val_t[1], _val_f[1]])
@@ -1189,19 +1316,19 @@ def test_telescope_251():
 # +
 # Telescope().zenith(self, obs_time=Time(get_isot(0, True)))
 # -
-def test_telescope_260():
+def test_telescope_290():
     _val_t = _tel.zenith(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True))
     _val_f = _tel.zenith(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False))
     assert all(isinstance(_k, str) for _k in [_val_t[0], _val_f[0]])
 
 
-def test_telescope_261():
+def test_telescope_291():
     _val_t = _tel.zenith(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True))
     _val_f = _tel.zenith(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False))
     assert all(re.match(OBS_RA_PATTERN, _k) is not None for _k in [_val_t[0], _val_f[0]])
 
 
-def test_telescope_262():
+def test_telescope_292():
     _val_t = _tel.zenith(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True))
     _val_f = _tel.zenith(obs_time=get_isot(random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), False))
     assert all(re.match(OBS_DEC_PATTERN, _k) is not None for _k in [_val_t[1], _val_f[1]])
