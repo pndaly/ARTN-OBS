@@ -168,11 +168,11 @@ def test_telescope_41():
 
 
 def test_telescope_42():
-    assert all([_tel.moon_civil('2020-06-05T12:00:00.000000') == 'full',
-                _tel.moon_civil('2020-06-12T12:00:00.000000') == 'last quarter',
-                _tel.moon_civil('2020-06-20T12:00:00.000000') == 'new',
-                _tel.moon_civil('2020-06-28T12:00:00.000000') == 'first quarter',
-                _tel.moon_civil('2020-07-04T12:00:00.000000') == 'full'])
+    assert all(['full' in _tel.moon_civil('2020-06-05T12:00:00.000000'),
+                'last' in _tel.moon_civil('2020-06-12T12:00:00.000000'),
+                'new' in _tel.moon_civil('2020-06-20T12:00:00.000000'),
+                'first' in _tel.moon_civil('2020-06-28T12:00:00.000000'),
+                'full' in _tel.moon_civil('2020-07-04T12:00:00.000000')])
 
 
 # +
