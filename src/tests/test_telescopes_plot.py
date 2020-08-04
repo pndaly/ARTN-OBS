@@ -88,7 +88,6 @@ def test_telescope_31():
 def test_telescope_32():
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
     _data_t = _tel_p.plot_all_altaz(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_coords=_coords, save=True)
@@ -100,7 +99,6 @@ def test_telescope_32():
 def test_telescope_33():
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
     _ra_l = _ra.replace(':', '').replace('.', '').strip()[:6]
     _dec_l = _dec.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
@@ -182,7 +180,6 @@ def test_telescope_22():
 def test_telescope_23():
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
     _ra_l = _ra.replace(':', '').replace('.', '').strip()[:6]
     _dec_l = _dec.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]
@@ -218,7 +215,6 @@ def test_telescope_61():
 def test_telescope_62():
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
     _data_t = _tel_p.plot_target_altaz(obs_time=get_isot(
         random.randint(TEST_LOWER_BOUND, TEST_UPPER_BOUND), True), obs_coords=_coords, save=True)
@@ -230,7 +226,6 @@ def test_telescope_62():
 def test_telescope_63():
     _ra = f"{random.randint(0, 23):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
     _dec = f"{random.randint(0, 89):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-    _dec = f"{random.choice(['-', '+'])}{_dec}"
     _coords = f"{_ra} {_dec}"
     _ra_l = _ra.replace(':', '').replace('.', '').strip()[:6]
     _dec_l = _dec.replace(':', '').replace('.', '').replace('-', '').replace('+', '').strip()[:6]

@@ -11,7 +11,7 @@ INS__NODES = {
         'filters': 'U, B, V, R, I, Clear',
         'flat_exposure_times': {'U': 30.0, 'B': 29.0, 'V': 28.0, 'R': 27.0, 'I': 26.0, 'Clear': 25.0},
         'readout': 15.0,
-        'readout_times': {'None': 15.0, '2x2': 7.5, '3x3': 5.0, '4x4': 3.75},
+        'readout_times': {'None': 15.0, '1x1': 12.5, '2x2': 7.5, '3x3': 5.0, '4x4': 3.75},
         'telescope': 'Bok',
         'type': 'imager'
     },
@@ -20,7 +20,7 @@ INS__NODES = {
         'filters': 'U, B, V, R, I, Clear',
         'flat_exposure_times': {'U': 30.0, 'B': 29.0, 'V': 28.0, 'R': 27.0, 'I': 26.0, 'Clear': 25.0},
         'readout': 15.0,
-        'readout_times': {'None': 15.0, '2x2': 7.5, '3x3': 5.0, '4x4': 3.75},
+        'readout_times': {'None': 15.0, '1x1': 12.5, '2x2': 7.5, '3x3': 5.0, '4x4': 3.75},
         'slits': '1pix, 2pix, 3pix',
         'telescope': 'Bok',
         'type': 'spectrograph'
@@ -31,16 +31,16 @@ INS__NODES = {
         'filters': 'U, B, V, R, I, Clear',
         'flat_exposure_times': {'U': 30.0, 'B': 29.0, 'V': 28.0, 'R': 27.0, 'I': 26.0, 'Clear': 25.0},
         'readout': 17.0,
-        'readout_times': {'None': 20.0, '2x2': 10.0, '3x3': 6.5, '4x4': 5.0},
+        'readout_times': {'None': 20.0, '1x1': 12.5, '2x2': 10.0, '3x3': 6.5, '4x4': 5.0},
         'telescope': 'Kuiper',
         'type': 'imager'
     },
     'BinoSpec': {
         'binning': 'None, 1x1, 2x2, 3x3, 4x4',
         'filters': 'g, r, i, z, Clear',
-        'flat_exposure_times': {'U': 30.0, 'B': 29.0, 'V': 28.0, 'R': 27.0, 'I': 26.0, 'Clear': 25.0},
+        'flat_exposure_times': {'g': 30.0, 'r': 29.0, 'i': 28.0, 'z': 27.0, 'Clear': 25.0},
         'readout': 15.0,
-        'readout_times': {'None': 15.0, '2x2': 7.5, '3x3': 5.0, '4x4': 3.75},
+        'readout_times': {'None': 15.0, '1x1': 12.5, '2x2': 7.5, '3x3': 5.0, '4x4': 3.75},
         'slits': '1pix, 2pix, 3pix',
         'telescope': 'MMT',
         'type': 'spectrograph'
@@ -51,7 +51,7 @@ INS__NODES = {
         'filters': 'U, B, V, R, I, Clear',
         'flat_exposure_times': {'U': 30.0, 'B': 29.0, 'V': 28.0, 'R': 27.0, 'I': 26.0, 'Clear': 25.0},
         'readout': 20.0,
-        'readout_times': {'None': 20.0, '2x2': 10.0, '3x3': 6.5, '4x4': 5.0},
+        'readout_times': {'None': 20.0, '1x1': 12.5, '2x2': 10.0, '3x3': 6.5, '4x4': 5.0},
         'telescope': 'Vatt',
         'type': 'imager'
     }
