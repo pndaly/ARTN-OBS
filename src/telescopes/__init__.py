@@ -15,7 +15,7 @@ import pytz
 TEL__NODES = {
     'Bok': {
         'aka': 'Bok 90-inch, Kitt Peak, AZ',
-        'altitude': 6795.8 / 3.28083,
+        'altitude': 6795.0 / 3.28083,
         'civil_dawn': -6.0,
         'nautical_dawn': -12.0,
         'astronomical_dawn': -18.0,
@@ -186,6 +186,35 @@ TEL__NODES = {
         'instruments': [],
         'timezone': pytz.timezone('Greenwich'),
         'utc_offset': datetime.now(pytz.timezone('Greenwich')).utcoffset().total_seconds()/60.0/60.0
+    },
+    'Colombieres': {
+        'aka': "La Basse Riviere, Colombieres, France",
+        'altitude': 0.0 / 3.28083,
+        'civil_dawn': -6.0,
+        'nautical_dawn': -12.0,
+        'astronomical_dawn': -18.0,
+        'civil_dusk': -6.0,
+        'nautical_dusk': -12.0,
+        'astronomical_dusk': -18.0,
+        'declination_limit': 60.0,
+        'dome_slew_rate': 1.0,
+        'elevation': 0.0,
+        'focal_length_m': 1.0,
+        'focal_length_ft': 1.0 * 3.28083,
+        'latitude': 49.301919,
+        'longitude': -0.967320,
+        'max_airmass': 2.5,
+        'max_moon_exclusion': 25.0,
+        'primary_imperial': 6.0,
+        'primary_metric': 0.1524,
+        'min_airmass': 1.0,
+        'min_moon_exclusion': 2.5,
+        'name': 'colombieres',
+        'mount': 'Alt-Az',
+        'telescope_slew_rate': 1.0,
+        'instruments': [],
+        'timezone': pytz.timezone('Europe/Paris'),
+        'utc_offset': datetime.now(pytz.timezone('Europe/Paris')).utcoffset().total_seconds()/60.0/60.0
     }
 }
 
