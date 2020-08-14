@@ -338,32 +338,62 @@ def get_hash(seed=get_date()):
 
 
 # +
-# function: get_iers():
+# function: get_iers_1():
 # -
 # noinspection PyBroadException
-def get_iers(url=OBS_ASTROPLAN_IERS_URL):
+def get_iers_1(url=OBS_ASTROPLAN_IERS_URL):
 
     # check input(s)
     if not isinstance(url, str) or url.strip() == '':
         raise Exception(f'invalid input, url={url}')
-    if not (url.lower().startswith('ftp') or url.lower().startswith('http')):
-        raise Exception(f'invalid input, url={url}')
+    if not (url.strip().lower().startswith('ftp') or url.strip().lower().startswith('http')):
+        raise Exception(f'invalid address, url={url}')
 
-    # try astroplan download
+    # astroplan download
     try:
+        print(f'IERS updating from astroplan from {url}')
         from astroplan import download_IERS_A
         download_IERS_A()
-        return 'astroplan'
+        print(f'IERS updated from astroplan from {url}')
+    except:
+        print(f'failed IERS update from astroplan from {url}')
 
-    # try alternate download
-    except Exception:
+
+# +
+# function: get_iers_2():
+# -
+# noinspection PyBroadException
+def get_iers_2(url=OBS_ASTROPLAN_IERS_URL_ALTERNATE):
+
+    # check input(s)
+    if not isinstance(url, str) or url.strip() == '':
+        raise Exception(f'invalid input, url={url}')
+    if not (url.strip().lower().startswith('ftp') or url.strip().lower().startswith('http')):
+        raise Exception(f'invalid address, url={url}')
+
+    # astropy download
+    try:
+        print(f'IERS updating from astropy from {url}')
         from astroplan import download_IERS_A
         from astropy.utils import iers
         from astropy.utils.data import clear_download_cache
         clear_download_cache()
         iers.IERS_A_URL = f'{url}'
         download_IERS_A()
-        return 'astropy'
+        print(f'IERS updated from astropy from {url}')
+    except:
+        print(f'failed IERS update from astropy from {url}')
+
+
+# +
+# function: get_iers():
+# -
+# noinspection PyBroadException
+def get_iers():
+    try:
+        get_iers_1()
+    except:
+        get_iers_2()
 
 
 # +
