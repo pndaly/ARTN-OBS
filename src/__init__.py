@@ -36,7 +36,6 @@ OBS_ASTROPLAN_IERS_URL = 'ftp://cddis.gsfc.nasa.gov/pub/products/iers/finals2000
 OBS_ASTROPLAN_IERS_URL_ALTERNATE = 'https://datacenter.iers.org/data/9/finals2000A.all'
 OBS_BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 OBS_COMMENT_CHARS = r' #%!<>+-\/'
-OBS_DEC_PATTERN = '[+-]?[0-9]{2}:[0-9]{2}:[0-9]{2}'
 OBS_DECODE_DICT = \
     {'.us.': '_', '.sq.': "'", '.ws.': ' ', '.bs.': '\\', '.at.': '@', '.bg.': '!', '.dq.': '"', '.eq.': '='}
 OBS_DEGREE = unicodedata.lookup('DEGREE SIGN')
@@ -44,7 +43,6 @@ OBS_ENCODE_DICT = {v: k for k, v in OBS_DECODE_DICT.items()}
 OBS_EPHEM_PATTERN = '[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]'
 OBS_FALSE_VALUES = [0, False, '0', 'false', 'f', 'FALSE', 'F']
 OBS_ISO_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
-OBS_ISO_PATTERN = '[0-9]{4}-[0-9]{2}-[0-9]{2}[ T?][0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}'
 OBS_LOG_CLR_FMT = \
     '%(log_color)s%(asctime)-20s %(levelname)-9s %(filename)-15s %(funcName)-15s line:%(lineno)-5d Message: %(message)s'
 OBS_LOG_CSL_FMT = \
@@ -56,7 +54,6 @@ OBS_LOG_MAX_BYTES = 9223372036854775807
 OBS_MJD_OFFSET = 2400000.5
 OBS_ONE_HOUR = 1.0 / 24.0
 OBS_PROPORTIONAL = unicodedata.lookup('PROPORTIONAL TO')
-OBS_RA_PATTERN = '[0-9]{2}:[0-9]{2}:[0-9]{2}'
 OBS_RESERVED_USERNAMES = ['darks', 'focus', 'skyflats', 'standard']
 OBS_SECONDS_PER_DAY = 86400.0
 OBS_SUPPORTED_COLORS = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'black', '']
@@ -67,6 +64,20 @@ OBS_ZERO_NID = '2019-01-01T00:00:00.000000'
 OBS_ZODIAC = {1: 'Alpha Capricorni', 2: 'Alpha Aquarii', 3: 'Alpha Piscium', 4: 'Alpha Arietis', 5: 'Alpha Tauri',
               6: 'Alpha Geminorum', 7: 'Alpha Cancri', 8: 'Alpha Leonis', 9: 'Alpha Virginis', 10: 'Alpha Librae',
               11: 'Alpha Scorpii', 12: 'Alpha Sagittarii'}
+
+
+# +
+# pattern(s)
+# -
+# +/-dd:mm:ss.sss
+OBS_DEC_PATTERN = '^[+-]?[0-8][0-9]:[0-5][0-9]:[0-5][0-9](\.[0-9]*)?'
+# YYYY-MM-DDThh:mm:ss.ssssss
+# OBS_ISO_PATTERN = '[0-9]{4}-[0-9]{2}-[0-9]{2}[ T?][0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}'
+OBS_ISO_PATTERN = '(1[89][0-9]{2}|2[0-9]{3})-(0[13578]-[012][0-9]|0[13578]-3[0-1]|' \
+                  '1[02]-[012][0-9]|1[02]-3[0-1]|02-[012][0-9]|0[469]-[012][0-9]|' \
+                  '0[469]-30|11-[012][0-9]|11-30)[ T](0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\.[0-9]*)?'
+# HH:MM:SS.SSS
+OBS_RA_PATTERN = '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\.[0-9]*)?'
 
 
 # +
