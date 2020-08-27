@@ -13,3 +13,5 @@ python3.7 -m pytest -p no:warnings test_telescopes.py
 python3.7 -m pytest -p no:warnings test_telescopes_moon.py
 python3.7 -m pytest -p no:warnings test_telescopes_plot.py
 python3.7 -m pytest -p no:warnings test_telescopes_sun.py
+
+rm -f $OBS_LOGS/*.log

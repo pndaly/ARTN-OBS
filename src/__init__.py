@@ -45,11 +45,12 @@ OBS_FALSE_VALUES = [0, False, '0', 'false', 'f', 'FALSE', 'F']
 OBS_ISO_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
 OBS_LOG_CLR_FMT = \
     '%(log_color)s%(asctime)-20s %(levelname)-9s %(filename)-15s %(funcName)-15s line:%(lineno)-5d Message: %(message)s'
-OBS_LOG_CSL_FMT = \
-    '%(asctime)-20s %(levelname)-9s %(filename)-15s %(funcName)-15s line:%(lineno)-5d Message: %(message)s'
 OBS_LOG_FIL_FMT = \
     '%(asctime)-20s %(levelname)-9s %(filename)-15s %(funcName)-15s line:%(lineno)-5d Message: %(message)s'
-OBS_LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+OBS_LOG_LEVELS = {'NOTSET': 0, 'DEBUG': 10, 'INFO': 20, 'WARNING': 30, 'ERROR': 40, 'CRITICAL': 50}
+OBS_LOG_LEVELS_K = [_k for _k in OBS_LOG_LEVELS]
+OBS_LOG_LEVELS_R = {_v: _k for _k, _v in OBS_LOG_LEVELS.items()}
+OBS_LOG_LEVELS_V = [_k for _k in OBS_LOG_LEVELS_R]
 OBS_LOG_MAX_BYTES = 9223372036854775807
 OBS_MJD_OFFSET = 2400000.5
 OBS_ONE_HOUR = 1.0 / 24.0
@@ -72,7 +73,6 @@ OBS_ZODIAC = {1: 'Alpha Capricorni', 2: 'Alpha Aquarii', 3: 'Alpha Piscium', 4: 
 # +/-dd:mm:ss.sss
 OBS_DEC_PATTERN = '^[+-]?[0-8][0-9]:[0-5][0-9]:[0-5][0-9](\.[0-9]*)?'
 # YYYY-MM-DDThh:mm:ss.ssssss
-# OBS_ISO_PATTERN = '[0-9]{4}-[0-9]{2}-[0-9]{2}[ T?][0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}'
 OBS_ISO_PATTERN = '(1[89][0-9]{2}|2[0-9]{3})-(0[13578]-[012][0-9]|0[13578]-3[0-1]|' \
                   '1[02]-[012][0-9]|1[02]-3[0-1]|02-[012][0-9]|0[469]-[012][0-9]|' \
                   '0[469]-30|11-[012][0-9]|11-30)[ T](0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\.[0-9]*)?'
@@ -94,127 +94,6 @@ OBS_DB_USER = os.getenv("OBS_DB_USER", "artn")
 # initialization
 # -
 random.seed(os.getpid())
-
-
-# +
-# class: Logger() inherits from the object class
-# -
-# noinspection PyBroadException,PyPep8
-class Logger(object):
-
-    # +
-    # method: __init__
-    # -
-    def __init__(self, name='', level='DEBUG'):
-
-        # get arguments(s)
-        self.name = name
-        self.level = level
-
-        # define some variables and initialize them
-        self.__msg = None
-        self.__logconsole = f'/tmp/console-{self.__name}.log'
-        self.__logdir = os.getenv("OBS_LOGS")
-        if not os.path.exists(self.__logdir) or not os.access(self.__logdir, os.W_OK):
-            self.__logdir = os.getcwd()
-        self.__logfile = f'{self.__logdir}/{self.__name}.log'
-
-        # logger dictionary
-        utils_logger_dictionary = {
-
-            # logging version
-            'version': 1,
-
-            # do not disable any existing loggers
-            'disable_existing_loggers': False,
-
-            # use the same formatter for everything
-            'formatters': {
-                'ObsColoredFormatter': {
-                    '()': 'colorlog.ColoredFormatter',
-                    'format': OBS_LOG_CLR_FMT,
-                    'log_colors': {
-                        'DEBUG': 'cyan',
-                        'INFO': 'green',
-                        'WARNING': 'yellow',
-                        'ERROR': 'red',
-                        'CRITICAL': 'white,bg_red',
-                    }
-                },
-                'ObsConsoleFormatter': {
-                    'format': OBS_LOG_CSL_FMT
-                },
-                'ObsFileFormatter': {
-                    'format': OBS_LOG_FIL_FMT
-                }
-            },
-
-            # define file and console handlers
-            'handlers': {
-                'colored': {
-                    'class': 'logging.StreamHandler',
-                    'formatter': 'ObsColoredFormatter',
-                    'level': self.__level,
-                },
-                'console': {
-                    'class': 'logging.StreamHandler',
-                    'formatter': 'ObsConsoleFormatter',
-                    'level': self.__level,
-                    'stream': 'ext://sys.stdout'
-                },
-                'file': {
-                    'backupCount': 10,
-                    'class': 'logging.handlers.RotatingFileHandler',
-                    'formatter': 'ObsFileFormatter',
-                    'filename': self.__logfile,
-                    'level': self.__level,
-                    'maxBytes': OBS_LOG_MAX_BYTES
-                },
-                'utils': {
-                    'backupCount': 10,
-                    'class': 'logging.handlers.RotatingFileHandler',
-                    'formatter': 'ObsFileFormatter',
-                    'filename': self.__logconsole,
-                    'level': self.__level,
-                    'maxBytes': OBS_LOG_MAX_BYTES
-                }
-            },
-
-            # make this logger use file and console handlers
-            'loggers': {
-                self.__name: {
-                    'handlers': ['colored', 'file', 'utils'],
-                    'level': self.__level,
-                    'propagate': True
-                }
-            }
-        }
-
-        # configure logger
-        logging.config.dictConfig(utils_logger_dictionary)
-
-        # get logger
-        self.logger = logging.getLogger(self.__name)
-
-    # +
-    # Decorator(s)
-    # -
-    @property
-    def name(self):
-        return self.__name
-
-    @name.setter
-    def name(self, name=''):
-        self.__name = name if (isinstance(name, str) and name.strip() != '') else os.getenv('USER')
-
-    @property
-    def level(self):
-        return self.__level
-
-    @level.setter
-    def level(self, level=''):
-        self.__level = level.upper() if \
-            (isinstance(level, str) and level.strip() != '' and level.upper() in OBS_LOG_LEVELS) else OBS_LOG_LEVELS[0]
 
 
 # +
@@ -706,3 +585,156 @@ def read_png(file=''):
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
     except:
         return None
+
+
+# +
+# class: Logger()
+# -
+class Logger(object):
+
+    # +
+    # method: __init__
+    # -
+    def __init__(self, name='', level=None):
+
+        # get argument(s)
+        self.name = name
+        self.level = level
+
+        # set default(s)
+        self.__logdict = None
+        self.__logdir = None
+        self.__logfile = None
+        self.__logtmp = None
+
+        # reset variable(s)
+        self.__logdir = os.getenv("OBS_LOGS", f"{os.getcwd()}")
+        if not os.path.exists(self.__logdir) or not os.access(self.__logdir, os.W_OK):
+            self.__logdir = os.getenv("HOME", "~")
+        self.__logdir = os.path.abspath(os.path.expanduser(self.__logdir))
+        self.__logfile = f'{self.__logdir}/{self.__name}.log'
+        self.__logtmp = f'/tmp/console-{self.__name}.log'
+
+        self.__logdict = {
+
+            # logging version
+            'version': 1,
+
+            # do not disable any existing loggers
+            'disable_existing_loggers': False,
+
+            # use the same formatter for everything
+            'formatters': {
+                'ObsColoredFormatter': {
+                    '()': 'colorlog.ColoredFormatter',
+                    'format': OBS_LOG_CLR_FMT,
+                    'log_colors': {
+                        'DEBUG': 'cyan',
+                        'INFO': 'green',
+                        'WARNING': 'yellow',
+                        'ERROR': 'red',
+                        'CRITICAL': 'white,bg_red',
+                    }
+                },
+                'ObsFileFormatter': {
+                    'format': OBS_LOG_FIL_FMT
+                }
+            },
+
+            # define file and console handlers
+            'handlers': {
+                'screen': {
+                    'class': 'logging.StreamHandler',
+                    'formatter': 'ObsColoredFormatter',
+                    'level': self.__level,
+                },
+                'file': {
+                    'backupCount': 10,
+                    'class': 'logging.handlers.RotatingFileHandler',
+                    'formatter': 'ObsFileFormatter',
+                    'filename': self.__logfile,
+                    'level': self.__level,
+                    'maxBytes': OBS_LOG_MAX_BYTES
+                },
+                'tmp': {
+                    'backupCount': 10,
+                    'class': 'logging.handlers.RotatingFileHandler',
+                    'formatter': 'ObsFileFormatter',
+                    'filename': self.__logtmp,
+                    'level': self.__level,
+                    'maxBytes': OBS_LOG_MAX_BYTES
+                }
+            },
+
+            # make this logger use file and console handlers
+            'loggers': {
+                self.__name: {
+                    'handlers': ['screen', 'file', 'tmp'],
+                    'level': self.__level,
+                    'propagate': True
+                }
+            }
+        }
+
+        # configure logger
+        logging.config.dictConfig(self.__logdict)
+
+        # get logger
+        self.__logger = logging.getLogger(self.__name)
+
+    # +
+    # getter(s) and setter(s)
+    # -
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, name=''):
+        self.__name = name if (isinstance(name, str) and name.strip() != '') else \
+            os.getenv('USER', get_hash(get_isot()))
+
+    @property
+    def level(self):
+        return self.__level
+
+    @level.setter
+    def level(self, level=None):
+        if isinstance(level, str) and level.upper() in OBS_LOG_LEVELS_K:
+            self.__level = level.upper()
+        elif isinstance(level, int) and level in OBS_LOG_LEVELS_V:
+            self.__level = OBS_LOG_LEVELS_R[level]
+        else:
+            self.__level = 'DEBUG'
+
+        # noinspection PyBroadException
+        try:
+            self.__logdict['handlers']['screen']['level'] = self.__level
+            self.__logdict['handlers']['file']['level'] = self.__level
+            self.__logdict['handlers']['tmp']['level'] = self.__level
+            logging.config.dictConfig(self.__logdict)
+        except:
+            pass
+
+    # +
+    # getter(s) only
+    # -
+    @property
+    def logdict(self):
+        return self.__logdict
+
+    @property
+    def logdir(self):
+        return self.__logdir
+
+    @property
+    def logfile(self):
+        return self.__logfile
+
+    @property
+    def logger(self):
+        return self.__logger
+
+    @property
+    def logtmp(self):
+        return self.__logtmp

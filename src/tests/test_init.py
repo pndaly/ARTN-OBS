@@ -23,13 +23,64 @@ __doc__ = """
 # Logger()
 # -
 def test_logger_0():
-    assert isinstance(Logger(get_hash()[:8]).logger, logging.Logger)
+    assert all(isinstance(Logger(name=_k, level=random.choice(OBS_LOG_LEVELS_K)), Logger) for _k in TEST_INVALID_INPUTS)
 
 
 def test_logger_1():
-    _s = get_hash()[:8]
-    _l = Logger(_s).logger
+    _l = Logger(name=get_hash(get_isot()), level=random.choice(OBS_LOG_LEVELS_K))
+    assert isinstance(_l.name, str) and _l.name.strip() != ''
+
+
+def test_logger_2():
+    _l = Logger(name=get_hash(get_isot()), level=random.choice(OBS_LOG_LEVELS_K))
+    assert isinstance(_l.level, str) and _l.level.strip() in OBS_LOG_LEVELS_K
+
+
+def test_logger_3():
+    _l = Logger(name=get_hash(get_isot()), level=random.choice(OBS_LOG_LEVELS_K))
+    assert isinstance(_l.logdict, dict) and _l.logdict is not None and _l.logdict is not {}
+
+
+def test_logger_4():
+    _l = Logger(name=get_hash(get_isot()), level=random.choice(OBS_LOG_LEVELS_K))
+    assert os.path.isdir(_l.logdir)
+
+
+def test_logger_5():
+    _l = Logger(name=get_hash(get_isot()), level=random.choice(OBS_LOG_LEVELS_K))
+    assert os.path.exists(_l.logfile)
+
+
+def test_logger_6():
+    _l = Logger(name=get_hash(get_isot()), level=random.choice(OBS_LOG_LEVELS_K))
+    assert os.path.exists(_l.logtmp)
+
+
+# +
+# Logger().logger
+# -
+def test_logger_10():
+    assert all(isinstance(Logger(name=_k).logger, logging.Logger) for _k in TEST_INVALID_INPUTS)
+
+
+def test_logger_11():
+    assert all(isinstance(Logger(level=_k).logger, logging.Logger) for _k in TEST_INVALID_INPUTS)
+
+
+def test_logger_12():
+    assert all(isinstance(Logger(name=get_hash(get_isot()), level=_k).logger, logging.Logger) for _k in OBS_LOG_LEVELS_K)
+
+
+def test_logger_13():
+    _s = get_hash(get_isot())
+    _l = Logger(name=_s, level=random.choice(OBS_LOG_LEVELS_K)).logger
     assert os.path.exists(os.path.abspath(os.path.expanduser(f"{os.getenv('OBS_LOGS', os.getcwd())}/{_s}.log")))
+
+
+def test_logger_14():
+    _s = get_hash(get_isot())
+    _l = Logger(name=_s, level=random.choice(OBS_LOG_LEVELS_K)).logger
+    assert os.path.exists(f"/tmp/console-{_s}.log")
 
 
 # +
@@ -202,19 +253,6 @@ def test_get_hash_3():
 
 def test_get_hash_4():
     assert get_hash(get_isot()) != get_hash(get_isot())
-
-
-# +
-# get_iers()
-# -
-def test_get_iers_0():
-    with ptr(Exception):
-        get_iers(random.choice(TEST_INVALID_INPUTS))
-
-
-def test_get_iers_1():
-    _res = get_iers().strip().lower()
-    assert _res == 'astroplan' or _res == 'astropy'
 
 
 # +
