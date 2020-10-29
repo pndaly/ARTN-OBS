@@ -44,9 +44,9 @@ OBS_EPHEM_PATTERN = '[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]'
 OBS_FALSE_VALUES = [0, False, '0', 'false', 'f', 'FALSE', 'F']
 OBS_ISO_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
 OBS_LOG_CLR_FMT = \
-    '%(log_color)s%(asctime)-20s %(levelname)-9s %(filename)-15s %(funcName)-15s line:%(lineno)-5d Message: %(message)s'
+    '%(log_color)s%(asctime)-20s %(levelname)-9s %(filename)-15s line:%(lineno)-5d %(message)s'
 OBS_LOG_FIL_FMT = \
-    '%(asctime)-20s %(levelname)-9s %(filename)-15s %(funcName)-15s line:%(lineno)-5d Message: %(message)s'
+    '%(asctime)-20s %(levelname)-9s %(filename)-15s line:%(lineno)-5d %(message)s'
 OBS_LOG_LEVELS = {'NOTSET': 0, 'DEBUG': 10, 'INFO': 20, 'WARNING': 30, 'ERROR': 40, 'CRITICAL': 50}
 OBS_LOG_LEVELS_K = [_k for _k in OBS_LOG_LEVELS]
 OBS_LOG_LEVELS_R = {_v: _k for _k, _v in OBS_LOG_LEVELS.items()}
@@ -219,8 +219,10 @@ def get_date():
 # function: get_hash()
 # -
 # noinspection PyBroadException,PyPep8
-def get_hash(seed=get_date()):
+def get_hash(seed=''):
     """ return unique 64-character string """
+    if not isinstance(seed, str) or seed.strip() == '':
+        seed = get_date()
     try:
         return hashlib.sha256(seed.encode('utf-8')).hexdigest()
     except:
@@ -610,7 +612,7 @@ class Logger(object):
         # reset variable(s)
         self.__logdir = os.getenv("OBS_LOGS", f"{os.getcwd()}")
         if not os.path.exists(self.__logdir) or not os.access(self.__logdir, os.W_OK):
-            self.__logdir = os.getenv("HOME", "~")
+            self.__logdir = os.getenv("HOME", os.path.abspath(os.path.expanduser("~")))
         self.__logdir = os.path.abspath(os.path.expanduser(self.__logdir))
         self.__logfile = f'{self.__logdir}/{self.__name}.log'
         self.__logtmp = f'/tmp/console-{self.__name}.log'
