@@ -17,21 +17,12 @@ from astropy.coordinates import get_sun
 from matplotlib import cm as cm
 from matplotlib import dates as mdates
 from matplotlib import pyplot as plt
-from astropy.visualization import astropy_mpl_style
-from astropy.visualization import quantity_support
 
 import astropy
 import datetime
 import io
 import math
 import numpy
-
-
-# +
-# initialize
-# -
-plt.style.use(astropy_mpl_style)
-quantity_support()
 
 
 # +
@@ -60,7 +51,7 @@ AST__WHICH = ['next', 'previous', 'nearest']
 # +
 # (factory) class: Telescope()
 # -
-# noinspection PyBroadException,PyUnresolvedReferences,PyTypeChecker
+# noinspection PyBroadException,PyUnresolvedReferences,PyTypeChecker,PyPep8
 class Telescope(object):
 
     # +
@@ -1726,6 +1717,7 @@ class Observability(object):
     # -
     # noinspection PyChainedComparisons
     def process(self):
+        # noinspection PyUnresolvedReferences
         if numpy.all(self.__sun_altaz.obstime == self.__target_altaz.obstime):
             _s = self.__sun_altaz.alt.value
             _t = self.__target_altaz.alt.value

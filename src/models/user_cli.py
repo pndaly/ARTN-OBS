@@ -20,7 +20,6 @@ __doc__ = """
 # +
 # user_cli()
 # -
-# noinspection PyBroadException,PyPep8
 def user_cli(iargs=None):
 
     # check input(s)
@@ -77,8 +76,8 @@ def user_cli(iargs=None):
         query = db.query(User)
         query = user_filters(query, request_args)
         query = query.order_by(User.id.desc())
-    except:
-        raise Exception(f'failed to execute query={query}')
+    except Exception as _e:
+        raise Exception(f'failed to execute query={query}, error={_e}')
 
     # output result(s)
     res = ''

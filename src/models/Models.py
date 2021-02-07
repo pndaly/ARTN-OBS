@@ -33,14 +33,14 @@ OBS_DB_URL = f'postgresql+psycopg2://{OBS_DB_USER}:{OBS_DB_PASS}@{OBS_DB_HOST}:{
 # +
 # function: connect_database()
 # -
-# noinspection PyBroadException,PyPep8
+# noinspection PyBroadException,PyPep8,PyPep8,PyPep8
 def connect_database(url=OBS_DB_URL):
     """ returns a connection class to database """
     try:
         engine = create_engine(url)
         session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    except:
-        raise Exception(f'invalid input, url={url}')
+    except Exception as _e:
+        raise Exception(f'invalid input, url={url}, error={_e}')
     return session
 
 
@@ -52,8 +52,8 @@ def disconnect_database(session=None):
     """ disconnects from database """
     try:
         session.close()
-    except:
-        raise Exception(f'invalid input, session={session}')
+    except Exception as _e:
+        raise Exception(f'invalid input, session={session}, error={_e}')
     return None
 
 

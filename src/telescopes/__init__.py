@@ -58,7 +58,7 @@ TEL__NODES = {
         'focal_length_ft': 9.6 * 3.28083,
         'latitude': 32.4165,
         'longitude': -110.7345,
-        'max_airmass': 3.5,
+        'max_airmass': 2.5,
         'max_moon_exclusion': 45.0,
         'primary_imperial': 1.54 * 3.28083 * 12.0,
         'primary_metric': 1.54,

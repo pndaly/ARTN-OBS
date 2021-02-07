@@ -20,7 +20,6 @@ __doc__ = """
 # +
 # obsreq_cli()
 # -
-# noinspection PyBroadException,PyPep8
 def obsreq_cli(iargs=None):
 
     # check input(s)
@@ -179,8 +178,8 @@ def obsreq_cli(iargs=None):
         query = db.query(ObsReq)
         query = obsreq_filters(query, request_args)
         query = query.order_by(ObsReq.id.desc())
-    except:
-        raise Exception(f'failed to execute query={query}')
+    except Exception as _e:
+        raise Exception(f'failed to execute query={query}, error={_e}')
 
     # output result(s)
     res = ''

@@ -5,8 +5,6 @@
 # edit as required
 # -
 export OBS_HOME=${1:-${PWD}}
-export OBS_APP_HOST=${2:-"locahost"}
-export OBS_APP_PORT=${3:-6000}
 export OBS_BIN=${OBS_HOME}/bin
 export OBS_DOCKER=${OBS_HOME}/docker
 export OBS_ETC=${OBS_HOME}/etc
@@ -45,4 +43,6 @@ export PYTHONPATH=${OBS_HOME}:${OBS_SRC}:${PYTHONPATH}
 # +
 # update ephemeris
 # -
-python3 -c 'from src import *; get_iers()'
+if [[ ! -z ${2} ]]; then
+  python3 -c 'from src import *; get_iers()'
+fi

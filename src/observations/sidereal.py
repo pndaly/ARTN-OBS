@@ -209,9 +209,9 @@ class Sidereal(ObsParams):
             self.__query = obsreq_filters(query=self.__query, request_args=self.__request_args)
             self.__query = obsreq_filters(query=self.__query, request_args={'exclude_username': 'artn'})
             self.__query = self.__query.order_by(ObsReq.id.desc())
-        except:
+        except Exception as _e:
             if self.__log:
-                self.__log.error(f'failed to execute query={self.__query}')
+                self.__log.error(f'failed to execute query={self.__query}, error={_e}')
             return self.__end, self.__end_jd
 
         # save result(s)

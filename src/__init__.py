@@ -71,6 +71,7 @@ OBS_ZODIAC = {1: 'Alpha Capricorni', 2: 'Alpha Aquarii', 3: 'Alpha Piscium', 4: 
 # pattern(s)
 # -
 # +/-dd:mm:ss.sss
+# noinspection PyPep8
 OBS_DEC_PATTERN = '^[+-]?[0-8][0-9]:[0-5][0-9]:[0-5][0-9](\.[0-9]*)?'
 # YYYY-MM-DDThh:mm:ss.ssssss
 OBS_ISO_PATTERN = '(1[89][0-9]{2}|2[0-9]{3})-(0[13578]-[012][0-9]|0[13578]-3[0-1]|' \
